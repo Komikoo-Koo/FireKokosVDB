@@ -136,7 +136,6 @@
             }
         });
     </script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
@@ -161,9 +160,19 @@
         function actualizarListaPacientes(snapshot) {
             datosFirebase = snapshot.val() || {}; 
 
-            // Guardar estado de los desplegables antes de recargar la lista
-            document.querySelectorAll(".accordion").forEach((btn) => {
-                estadoDesplegables[btn.textContent] = btn.classList.contains("active");
+            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
+                const paciente = btn.textContent.trim();
+                if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                estadoDesplegables[paciente]._abierto = btn.classList.contains("active");
+            });
+
+            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
+                const pacienteDiv = btn.closest(".paciente");
+                if (!pacienteDiv) return;
+                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                const fecha = btn.textContent.trim();
+                if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                estadoDesplegables[paciente][fecha] = btn.classList.contains("active");
             });
 
             mostrarPacientes();
@@ -191,8 +200,8 @@
                     const fechaDiv = document.createElement('div');
                     fechaDiv.className = 'fecha';
                     fechaDiv.innerHTML = `
-                        <button class="accordion">${fecha} 📅</button>
-                        <div class="panel">
+                        <button class="accordion fecha-btn">${fecha} 📅</button>
+                        <div class="panel fecha-panel">
                             <p><strong>Altura:</strong> ${datos.altura} cm</p>
                             <p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>
                             <p><strong>Presión Arterial:</strong> ${datos.presion}</p>
@@ -205,12 +214,34 @@
 
             activarAccordion(); 
 
-            document.querySelectorAll(".accordion").forEach((btn) => {
-                if (estadoDesplegables[btn.textContent]) {
+            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
+                const paciente = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente]._abierto) {
                     btn.classList.add("active");
                     btn.nextElementSibling.style.display = "block";
-                    btn.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
+            });
+
+            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
+                const pacienteDiv = btn.closest(".paciente");
+                if (!pacienteDiv) return;
+                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                const fecha = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente][fecha]) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
+                }
+            });
+
+            // Aplicar estilos a los botones de fecha
+            document.querySelectorAll(".fecha-btn").forEach((btn) => {
+                btn.style.backgroundColor = "var(--fecha-bg)";
+                btn.style.borderLeft = "3px solid var(--fecha-border)";
+            });
+
+            // Aplicar estilos al panel de fecha para cambiar la línea lateral
+            document.querySelectorAll(".fecha-panel").forEach((panel) => {
+                panel.style.borderLeft = "3px solid var(--fecha-border)";
             });
         }
 
@@ -220,7 +251,18 @@
                     this.classList.toggle("active");
                     const panel = this.nextElementSibling;
                     panel.style.display = panel.style.display === "block" ? "none" : "block";
-                    this.scrollIntoView({ behavior: "smooth", block: "center" });
+
+                    const pacienteDiv = this.closest(".paciente");
+                    if (pacienteDiv) {
+                        const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                        if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                        if (this.classList.contains("fecha-btn")) {
+                            const fecha = this.textContent.trim();
+                            estadoDesplegables[paciente][fecha] = this.classList.contains("active");
+                        } else {
+                            estadoDesplegables[paciente]._abierto = this.classList.contains("active");
+                        }
+                    }
                 });
             });
         }
