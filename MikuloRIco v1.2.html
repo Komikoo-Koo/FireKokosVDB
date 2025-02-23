@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Pacientes (Tiempo Real)</title>
+    
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --accordion-bg: #007BFF;
+            --accordion-hover: #0056b3;
+            --panel-bg: white;
+            --panel-border: #007BFF;
+            --fecha-bg: #f9a825;
+            --fecha-border: #f9a825;
+        }
+
+        body.dark-mode {
+            --bg-color: #181818;
+            --text-color: #ffffff;
+            --accordion-bg: #444;
+            --accordion-hover: #666;
+            --panel-bg: #222;
+            --panel-border: #666;
+            --fecha-bg: #b58d00;
+            --fecha-border: #b58d00;
+        }
+
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 0; 
+            transition: 0.3s;
+        }
+
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-color);
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .buscador { margin-top: 10px; }
+        
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 200px;
+            font-size: 16px;
+        }
+
+        #lista-pacientes-container {
+            margin-top: 210px;
+            height: calc(100vh - 180px); 
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .paciente, .fecha { margin-bottom: 10px; }
+
+        .accordion {
+            background-color: var(--accordion-bg);
+            color: white;
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.3s;
+            font-size: 18px;
+        }
+        .active, .accordion:hover {
+            background-color: var(--accordion-hover);
+        }
+        .panel {
+            display: none;
+            padding: 10px;
+            background-color: var(--panel-bg);
+            border-left: 3px solid var(--panel-border);
+        }
+
+        #toggle-mode {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: var(--accordion-bg);
+            color: white;
+            border: none;
+            transition: 0.3s;
+        }
+        #toggle-mode:hover {
+            background-color: var(--accordion-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="fixed-header">
+        <h1>Lista de Pacientes</h1>
+        <button id="toggle-mode">🌙 Modo Oscuro</button>
+        <div class="buscador">
+            <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
+            <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
+        </div>
+    </div>
+
+    <div id="lista-pacientes-container">
+        <div id="lista-pacientes"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggleBtn = document.getElementById("toggle-mode");
+
+            function toggleDarkMode() {
+                document.body.classList.toggle("dark-mode");
+                const isDarkMode = document.body.classList.contains("dark-mode");
+                localStorage.setItem("dark-mode", isDarkMode);
+                toggleBtn.textContent = isDarkMode ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
+            }
+
+            toggleBtn.addEventListener("click", toggleDarkMode);
+
+            if (localStorage.getItem("dark-mode") === "true") {
+                document.body.classList.add("dark-mode");
+                toggleBtn.textContent = "☀️ Modo Claro";
+            }
+            setInterval(() => {
+        filtrar(); // Llama a la función de filtrado automáticamente
+    }, 50);
+        });
+
+        Nombre = document.getElementById("buscar-paciente").value.toLowerCase();
+    let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+    let pacientes = document.querySelectorAll(".paciente");
+    let hayFiltroPorNombre = inputNombre.length > 0;
+    let hayFiltroPorFecha = inputFecha.length > 0;
+
+    let pacientesVisibles = [];
+
+// Función que filtra pacientes y fechas
+function filtrar() {
+    let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
+    let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+    let pacientes = document.querySelectorAll(".paciente");
+    let hayFiltroPorNombre = inputNombre.length > 0;
+    let hayFiltroPorFecha = inputFecha.length > 0;
+
+    let pacientesVisibles = [];
+
+    pacientes.forEach(paciente => {
+        let nombre = paciente.querySelector(".accordion").textContent.toLowerCase();
+        let fechas = paciente.querySelectorAll(".fecha");
+
+        let coincideNombre = hayFiltroPorNombre && nombre.includes(inputNombre);
+        let fechaVisible = false;
+
+        // Verificamos si las fechas coinciden con el filtro
+        fechas.forEach(fechaDiv => {
+            let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
+            let coincideFecha = hayFiltroPorFecha && fechaTexto.includes(inputFecha);
+
+            // Solo mostramos las fechas que coinciden
+            fechaDiv.style.display = coincideFecha ? "block" : "none";
+            if (coincideFecha) fechaVisible = true;
+        });
+
+        // Lógica de visibilidad del paciente
+        if (hayFiltroPorNombre && hayFiltroPorFecha) {
+            let mostrar = coincideNombre && fechaVisible;
+            paciente.style.display = mostrar ? "block" : "none";
+            if (mostrar) pacientesVisibles.push(paciente);
+        } else if (hayFiltroPorNombre) {
+            paciente.style.display = coincideNombre ? "block" : "none";
+            if (coincideNombre) {
+                pacientesVisibles.push(paciente);
+                mantenerFechasVisibles(paciente); // Mantenemos las fechas visibles si ya estaban abiertas
+            }
+        } else if (hayFiltroPorFecha) {
+            paciente.style.display = fechaVisible ? "block" : "none";
+            if (fechaVisible) pacientesVisibles.push(paciente);
+        } else {
+            paciente.style.display = "block";
+            fechas.forEach(fechaDiv => fechaDiv.style.display = "block");
+        }
+    });
+
+    // Si primero se buscó un paciente y luego una fecha, evitar que aparezcan otros pacientes
+    if (pacientesVisibles.length === 1 && hayFiltroPorFecha) {
+        pacientes.forEach(paciente => {
+            if (!pacientesVisibles.includes(paciente)) {
+                paciente.style.display = "none";
+            }
+        });
+    }
+
+    // 🔹 Actualizamos las fechas después de un pequeño retraso (usamos un temporizador)
+    setTimeout(actualizarFechasVisibles, 100); // 100ms de retraso (ajustable)
+}
+
+/**
+ * 🔹 Función que actualiza las fechas visibles después de aplicar el filtro.
+ */
+function actualizarFechasVisibles() {
+    const pacientes = document.querySelectorAll(".paciente");
+
+    pacientes.forEach(paciente => {
+        const fechas = paciente.querySelectorAll(".fecha");
+        const panel = paciente.querySelector(".panel");
+
+        // Solo actualizar las fechas visibles si el paciente está visible
+        if (paciente.style.display === "block") {
+            fechas.forEach(fechaDiv => {
+                let coincideFecha = true; // Asumimos que la fecha coincide, pero la verificamos después
+
+                // Si hay un filtro de fecha, verificamos si la fecha coincide con la búsqueda
+                if (document.getElementById("buscar-fecha").value.length > 0) {
+                    let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+                    let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
+                    coincideFecha = fechaTexto.includes(inputFecha);
+                }
+
+                // Mostrar las fechas que coinciden con la búsqueda
+                fechaDiv.style.display = coincideFecha ? "block" : "none";
+            });
+        }
+    });
+}
+
+/**
+ * 🔹 Evita que las fechas de un paciente visible por búsqueda de nombre se oculten si el usuario ya las tenía desplegadas.
+ */
+function mantenerFechasVisibles(paciente) {
+    let panel = paciente.querySelector(".panel");
+    let fechas = paciente.querySelectorAll(".fecha");
+
+    if (panel.style.display === "block") {
+        fechas.forEach(fechaDiv => fechaDiv.style.display = "block");
+    }
+}
+
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "API_KEY",
+            authDomain: "wholesome-de54b.firebaseapp.com",
+            databaseURL: "https://wholesome-de54b-default-rtdb.firebaseio.com",
+            projectId: "wholesome-de54b",
+            storageBucket: "wholesome-de54b.appspot.com",
+            messagingSenderId: "546570976928",
+            appId: "1:546570976928:web:807549c9383b99db8d53c5",
+            measurementId: "G-5WLY2QJMED"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const pacientesRef = ref(database, "Pacientes");
+
+        let datosFirebase = {};
+        let estadoDesplegables = {};
+
+        function actualizarListaPacientes(snapshot) {
+            datosFirebase = snapshot.val() || {};
+
+            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
+                const paciente = btn.textContent.trim();
+                if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                estadoDesplegables[paciente]._abierto = btn.classList.contains("active");
+            });
+
+            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
+                const pacienteDiv = btn.closest(".paciente");
+                if (!pacienteDiv) return;
+                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                const fecha = btn.textContent.trim();
+                if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                estadoDesplegables[paciente][fecha] = btn.classList.contains("active");
+            });
+
+            mostrarPacientes();
+        }
+
+        function mostrarPacientes() {
+            const listaPacientes = document.getElementById('lista-pacientes');
+            listaPacientes.innerHTML = ''; 
+
+            for (const paciente in datosFirebase) {
+                const fechas = datosFirebase[paciente];
+
+                const pacienteDiv = document.createElement('div');
+                pacienteDiv.className = 'paciente';
+                pacienteDiv.innerHTML = `
+                    <button class="accordion">${paciente} ⬇</button>
+                    <div class="panel"></div>
+                `;
+                listaPacientes.appendChild(pacienteDiv);
+
+                const panelPaciente = pacienteDiv.querySelector(".panel");
+                for (const fecha in fechas) {
+                    const datos = fechas[fecha];
+
+                    const fechaDiv = document.createElement('div');
+                    fechaDiv.className = 'fecha';
+                    fechaDiv.innerHTML = `
+                        <button class="accordion fecha-btn">${fecha} 📅</button>
+                        <div class="panel fecha-panel">
+                            <p><strong>Altura:</strong> ${datos.altura} cm</p>
+                            <p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>
+                            <p><strong>Presión Arterial:</strong> ${datos.presion}</p>
+                            <p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>
+                        </div>
+                    `;
+                    panelPaciente.appendChild(fechaDiv);
+                }
+            }
+
+            activarAccordion();
+
+            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
+                const paciente = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente]._abierto) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
+                }
+            });
+
+            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
+                const pacienteDiv = btn.closest(".paciente");
+                if (!pacienteDiv) return;
+                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                const fecha = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente][fecha]) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
+                }
+            });
+
+            document.querySelectorAll(".fecha-btn").forEach((btn) => {
+                btn.style.backgroundColor = "var(--fecha-bg)";
+                btn.style.borderLeft = "3px solid var(--fecha-border)";
+            });
+
+            document.querySelectorAll(".fecha-panel").forEach((panel) => {
+                panel.style.borderLeft = "3px solid var(--fecha-border)";
+            });
+        }
+
+        function activarAccordion() {
+            document.querySelectorAll(".accordion").forEach((accordion) => {
+                accordion.addEventListener("click", function () {
+                    this.classList.toggle("active");
+                    const panel = this.nextElementSibling;
+                    panel.style.display = panel.style.display === "block" ? "none" : "block";
+
+                    const pacienteDiv = this.closest(".paciente");
+                    if (pacienteDiv) {
+                        const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                        if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                        if (this.classList.contains("fecha-btn")) {
+                            const fecha = this.textContent.trim();
+                            estadoDesplegables[paciente][fecha] = this.classList.contains("active");
+                        } else {
+                            estadoDesplegables[paciente]._abierto = this.classList.contains("active");
+                        }
+                    }
+                });
+            });
+        }
+
+        function filtrar() {
+            let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
+            let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+            let pacientes = document.querySelectorAll(".paciente");
+
+            pacientes.forEach(paciente => {
+                let nombre = paciente.querySelector(".accordion").textContent.toLowerCase();
+                let fechas = paciente.querySelectorAll(".fecha");
+
+                let coincideNombre = inputNombre.length > 0 && nombre.includes(inputNombre);
+                let fechaVisible = false;
+                let tieneFechas = fechas.length > 0;
+
+                fechas.forEach(fechaDiv => {
+                    let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
+                    let coincideFecha = fechaTexto.includes(inputFecha);
+                    fechaDiv.style.display = coincideFecha ? "block" : "none";
+                    if (coincideFecha) fechaVisible = true;
+                });
+
+                // 🔹 Nueva lógica corregida para ocultar pacientes con fechas cuando el buscador de fecha está vacío
+                if (tieneFechas && inputFecha.length === 0 && !coincideNombre) {
+                    paciente.style.display = "none"; // Oculta los pacientes con fechas si no coinciden en nombre
+                } else {
+                    paciente.style.display = (coincideNombre || fechaVisible) ? "block" : "none";
+                }
+            });
+        }
+
+        onValue(pacientesRef, actualizarListaPacientes);
+    </script>
+</body>
+</html>
