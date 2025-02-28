@@ -14,7 +14,7 @@
     <script>
         async function cargarConfigFirebase() {
             try {
-                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
+                const response = await fetch("Scripts/firebase-config.js");
                 const script = await response.text();
                 eval(script); // 🔥 Carga la configuración de Firebase
 
@@ -63,13 +63,15 @@
                 // 🔥 Esperar 2 segundos para que Firebase actualice la autenticación
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
-                // 🔥 Verificar si el usuario sigue autenticado
+                // 🔥 Verificar si la sesión está iniciada
                 const user = window.auth.currentUser;
                 if (!user) {
                     console.error("🔥 Error: Usuario no autenticado después del registro.");
                     alert("Error: No se pudo autenticar correctamente.");
                     return;
                 }
+
+                console.log("✅ Sesión iniciada correctamente como:", user.email);
 
                 // 🔥 Determinar el rol basado en el correo (solo para prueba)
                 let rolAsignado = email.includes("medico") ? "medico" : "paciente";
@@ -82,6 +84,9 @@
                 });
 
                 alert(`Usuario registrado correctamente con rol: ${rolAsignado}`);
+
+                // 🔥 Confirmación en consola
+                console.log("🔥 Usuario registrado y sesión iniciada con éxito:", user);
             } catch (error) {
                 console.error("🔥 Error al registrar:", error);
                 alert("Error al registrar usuario: " + error.message);
