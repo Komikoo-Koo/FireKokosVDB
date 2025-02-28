@@ -5,37 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Usuarios</title>
 
-    <!-- Cargar Firebase -->
+    <!-- 🔥 Cargar Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <h2>Registro de Usuarios</h2>
+    <input type="text" id="nombre" placeholder="Nombre"><br>
+    <input type="email" id="email" placeholder="Correo"><br>
+    <input type="password" id="password" placeholder="Contraseña"><br>
+    <button onclick="registrar()">Registrarse</button>
 
-    <!-- 🔥 Cargar configuración desde GitHub -->
-    <script>
-        async function cargarConfigFirebase() {
-            try {
-                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
-                const script = await response.text();
-                eval(script); // 🔥 Carga la configuración de Firebase
+    <h2>Bienvenido, <span id="usuarioNombre">Cargando...</span></h2>
+    <p>Tu rol es: <span id="usuarioRol">Cargando...</span></p>
+    <button onclick="cerrarSesion()">Cerrar Sesión</button>
 
-                if (typeof firebaseConfig !== "undefined") {
-                    firebase.initializeApp(firebaseConfig);
-
-                    // 🔥 Definir auth y db después de inicializar Firebase
-                    window.auth = firebase.auth();
-                    window.db = firebase.database();
-
-                    console.log("🔥 Firebase inicializado correctamente.");
-                } else {
-                    console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
-                }
-            } catch (error) {
-                console.error("🔥 Error al cargar Firebase Config:", error);
-            }
-        }
-
-        cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
-    </script>
+    <!-- 🔥 Importar `auth.js` para manejar la sesión -->
+    <script src="https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/auth.js"></script>
 
     <script>
         async function registrar() {
@@ -88,12 +75,5 @@
             }
         }
     </script>
-</head>
-<body>
-    <h2>Registro de Usuarios</h2>
-    <input type="text" id="nombre" placeholder="Nombre"><br>
-    <input type="email" id="email" placeholder="Correo"><br>
-    <input type="password" id="password" placeholder="Contraseña"><br>
-    <button onclick="registrar()">Registrarse</button>
 </body>
 </html>
