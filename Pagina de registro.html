@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuarios</title>
+
+    <!-- Cargar Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
+
+    <!-- 🔥 Cargar configuración desde GitHub -->
+    <script>
+        async function cargarConfigFirebase() {
+            try {
+                const response = await fetch("https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/Scripts/config/firebase-config.js");
+                const script = await response.text();
+                eval(script); // 🔥 Carga la configuración desde el archivo remoto
+
+                if (typeof firebaseConfig !== "undefined") {
+                    firebase.initializeApp(firebaseConfig);
+
+                    // 🔥 Definir auth y db después de inicializar Firebase
+                    window.auth = firebase.auth();
+                    window.db = firebase.database();
+
+                    console.log("🔥 Firebase inicializado correctamente.");
+                } else {
+                    console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
+                }
+            } catch (error) {
+                console.error("🔥 Error al cargar Firebase Config:", error);
+            }
+        }
+
+        cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
+    </script>
+
+    <script>
+        function registrar() {
+            let nombre = document.getElementById("nombre").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let password = document.getElementById("password").value.trim();
+
+            if (nombre === "" || email === "" || password === "") {
+                alert("Por favor, llena todos los campos.");
+                return;
+            }
+
+            if (!window.auth || !window.db) {
+                alert("Error: Firebase no está inicializado todavía.");
+                return;
+            }
+
+            // 🔥 Registrar usuario en Firebase Authentication
+            window.auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    let uid = userCredential.user.uid;
+
+                    // 🔥 Guardar los datos del usuario en Firebase Database
+                    return window.db.ref("usuarios/" + uid).set({
+                        nombre: nombre,
+                        email: email
+                    });
+                })
+                .then(() => {
+                    alert("Usuario registrado correctamente.");
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Error al registrar usuario: " + error.message);
+                });
+        }
+    </script>
+</head>
+<body>
+    <h2>Registro de Usuarios</h2>
+    <input type="text" id="nombre" placeholder="Nombre"><br>
+    <input type="email" id="email" placeholder="Correo"><br>
+    <input type="password" id="password" placeholder="Contraseña"><br>
+    <button onclick="registrar()">Registrarse</button>
+</body>
+</html>
