@@ -26,6 +26,16 @@
                     window.db = firebase.database();
 
                     console.log("🔥 Firebase inicializado correctamente.");
+
+                    // 🔥 Verificar si la sesión está iniciada al cargar la página
+                    window.auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            console.log("✅ Sesión activa:", user.email);
+                        } else {
+                            console.log("❌ No hay sesión iniciada.");
+                        }
+                    });
+
                 } else {
                     console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
                 }
@@ -82,6 +92,16 @@
                 });
 
                 alert(`Usuario registrado correctamente con rol: ${rolAsignado}`);
+
+                // 🔥 Confirmar que la sesión sigue activa después del registro
+                window.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        console.log("✅ Confirmación: sesión sigue activa después del registro:", user.email);
+                    } else {
+                        console.error("🔥 Error: La sesión se cerró inesperadamente después del registro.");
+                    }
+                });
+
             } catch (error) {
                 console.error("🔥 Error al registrar:", error);
                 alert("Error al registrar usuario: " + error.message);
