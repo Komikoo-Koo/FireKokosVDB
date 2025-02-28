@@ -1,4 +1,4 @@
-// 🔥 Cargar configuración desde GitHub
+// 🔥 Cargar configuración desde GitHub y asegurarse de que Firebase esté inicializado
 async function cargarConfigFirebase() {
     try {
         const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
@@ -6,7 +6,9 @@ async function cargarConfigFirebase() {
         eval(script); // 🔥 Carga la configuración de Firebase
 
         if (typeof firebaseConfig !== "undefined") {
-            firebase.initializeApp(firebaseConfig);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
 
             window.auth = firebase.auth();
             window.db = firebase.database();
