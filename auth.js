@@ -14,6 +14,7 @@ async function cargarConfigFirebase() {
             window.db = firebase.database();
 
             console.log("🔥 Firebase inicializado correctamente.");
+            window.firebaseInicializado = true; // 🔥 Confirmar que Firebase está listo
 
             // 🔥 Detectar sesión activa en todas las páginas
             auth.onAuthStateChanged(user => {
@@ -36,30 +37,16 @@ async function cargarConfigFirebase() {
     }
 }
 
-// 🔥 Obtener datos del usuario
-async function obtenerDatosUsuario(uid) {
-    try {
-        const snapshot = await db.ref("usuarios/" + uid).once("value");
-        if (snapshot.exists()) {
-            const datos = snapshot.val();
-            console.log("🔥 Datos del usuario:", datos);
-            if (document.getElementById("usuarioNombre")) {
-                document.getElementById("usuarioNombre").innerText = datos.nombre;
+// 🔥 Esperar a que Firebase esté inicializado antes de ejecutar cualquier código
+function esperarFirebase() {
+    return new Promise(resolve => {
+        const intervalo = setInterval(() => {
+            if (window.firebaseInicializado) {
+                clearInterval(intervalo);
+                resolve();
             }
-            if (document.getElementById("usuarioRol")) {
-                document.getElementById("usuarioRol").innerText = datos.rol;
-            }
-
-            // 🔥 Redirigir según el rol
-            if (datos.rol === "medico" && window.location.pathname !== "/medico.html") {
-                window.location.href = "medico.html";
-            } else if (datos.rol === "paciente" && window.location.pathname !== "/paciente.html") {
-                window.location.href = "paciente.html";
-            }
-        }
-    } catch (error) {
-        console.error("🔥 Error al obtener datos del usuario:", error);
-    }
+        }, 100); // 🔥 Verifica cada 100ms si Firebase ya se inicializó
+    });
 }
 
 // 🔥 Función para cerrar sesión
