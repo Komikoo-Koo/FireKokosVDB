@@ -14,7 +14,7 @@
     <script>
         async function cargarConfigFirebase() {
             try {
-                const response = await fetch("https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/Scripts/config/firebase-config.js");
+                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
                 const script = await response.text();
                 eval(script); // 🔥 Carga la configuración desde el archivo remoto
 
