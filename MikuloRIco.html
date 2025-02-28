@@ -253,35 +253,16 @@ function mantenerFechasVisibles(paciente) {
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-<!-- 🔥 Cargar Firebase ANTES de usarlo -->
-<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
-
-<script>
-    async function cargarConfigFirebase() {
-        try {
-            const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
-            const script = await response.text();
-            eval(script); // 🔥 Carga la configuración de Firebase
-
-            console.log("🔥 Firebase Config cargado:", script); // 👈 Para verificar si se está cargando
-
-            if (typeof firebaseConfig !== "undefined") {
-                firebase.initializeApp(firebaseConfig);
-                window.auth = firebase.auth();
-                window.db = firebase.database();
-
-                console.log("🔥 Firebase inicializado correctamente.");
-            } else {
-                console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
-            }
-        } catch (error) {
-            console.error("🔥 Error al cargar Firebase Config:", error);
-        }
-    }
-
-    cargarConfigFirebase(); // 🔥 Llamar a la función después de cargar los scripts
+        const firebaseConfig = {
+            apiKey: "API_KEY",
+            authDomain: "wholesome-de54b.firebaseapp.com",
+            databaseURL: "https://wholesome-de54b-default-rtdb.firebaseio.com",
+            projectId: "wholesome-de54b",
+            storageBucket: "wholesome-de54b.appspot.com",
+            messagingSenderId: "546570976928",
+            appId: "1:546570976928:web:807549c9383b99db8d53c5",
+            measurementId: "G-5WLY2QJMED"
+        };
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
