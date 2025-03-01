@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Pacientes (Tiempo Real)</title>
-
+    
     <style>
         :root {
             --bg-color: #f4f4f9;
@@ -13,6 +13,8 @@
             --accordion-hover: #0056b3;
             --panel-bg: white;
             --panel-border: #007BFF;
+            --fecha-bg: #f9a825;
+            --fecha-border: #f9a825;
         }
 
         body.dark-mode {
@@ -22,6 +24,8 @@
             --accordion-hover: #666;
             --panel-bg: #222;
             --panel-border: #666;
+            --fecha-bg: #b58d00;
+            --fecha-border: #b58d00;
         }
 
         body { 
@@ -75,16 +79,23 @@
             transition: 0.3s;
             font-size: 18px;
         }
-
         .active, .accordion:hover {
             background-color: var(--accordion-hover);
         }
-
         .panel {
             display: none;
             padding: 10px;
             background-color: var(--panel-bg);
             border-left: 3px solid var(--panel-border);
+        }
+
+        /* 🔥 Estilos personalizados para fechas */
+        .fecha-btn {
+            background-color: var(--fecha-bg) !important;
+            border-left: 3px solid var(--fecha-border) !important;
+        }
+        .fecha-panel {
+            border-left: 3px solid var(--fecha-border) !important;
         }
 
         #toggle-mode {
@@ -119,8 +130,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
 
-    <!-- 🔥 Cargar configuración de Firebase desde GitHub -->
     <script>
+        // 🔥 Variables para recordar el estado de los acordeones
+        let estadoDesplegables = {};
+
+        // 🔥 Cargar configuración desde GitHub
         async function cargarConfigFirebase() {
             try {
                 const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
@@ -129,22 +143,10 @@
 
                 if (typeof firebaseConfig !== "undefined") {
                     firebase.initializeApp(firebaseConfig);
-
-                    // 🔥 Definir auth y db después de inicializar Firebase
-                    window.auth = firebase.auth();
                     window.db = firebase.database();
 
                     console.log("🔥 Firebase inicializado correctamente.");
-
-                    // 🔥 Verificar si la sesión está iniciada al cargar la página
-                    window.auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            console.log("✅ Sesión activa:", user.email);
-                            obtenerPacientes(); // 🔥 Obtener datos solo si hay sesión activa
-                        } else {
-                            console.log("❌ No hay sesión iniciada.");
-                        }
-                    });
+                    obtenerPacientes(); // 🔥 Cargar datos en tiempo real
 
                 } else {
                     console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
@@ -154,8 +156,9 @@
             }
         }
 
-        cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
+        cargarConfigFirebase(); // 🔥 Cargar Firebase antes de cualquier otra función
 
+        // 🔥 Cargar datos en tiempo real desde Firebase
         function obtenerPacientes() {
             const pacientesRef = window.db.ref("Pacientes");
 
@@ -167,6 +170,7 @@
         }
     </script>
     <script>
+        // 🔥 Función para actualizar la lista sin perder el estado de los acordeones
         function actualizarListaPacientes(datosFirebase) {
             const listaPacientes = document.getElementById('lista-pacientes');
             listaPacientes.innerHTML = ''; // 🔥 Evita duplicados
@@ -174,7 +178,8 @@
             Object.keys(datosFirebase).forEach(paciente => {
                 const fechas = datosFirebase[paciente];
 
-                // 🔥 Crear la estructura para cada paciente
+                let abiertoPaciente = estadoDesplegables[paciente]?._abierto || false;
+
                 const pacienteDiv = document.createElement('div');
                 pacienteDiv.className = 'paciente';
                 pacienteDiv.innerHTML = `
@@ -188,7 +193,8 @@
                 Object.keys(fechas).forEach(fecha => {
                     const datos = fechas[fecha];
 
-                    // 🔥 Estructura para mostrar fechas y datos médicos
+                    let abiertoFecha = estadoDesplegables[paciente]?.[fecha] || false;
+
                     const fechaDiv = document.createElement('div');
                     fechaDiv.className = 'fecha';
                     fechaDiv.innerHTML = `
@@ -202,32 +208,61 @@
                         </div>
                     `;
                     panelPaciente.appendChild(fechaDiv);
+
+                    if (abiertoFecha) {
+                        fechaDiv.querySelector(".accordion").classList.add("active");
+                        fechaDiv.querySelector(".panel").style.display = "block";
+                    }
                 });
+
+                if (abiertoPaciente) {
+                    pacienteDiv.querySelector(".accordion").classList.add("active");
+                    pacienteDiv.querySelector(".panel").style.display = "block";
+                }
             });
 
             activarAccordion();
+            filtrar(); // 🔥 Aplicar filtro nuevamente después de actualizar los datos
         }
 
+        // 🔥 Función para recordar qué acordeones estaban abiertos
         function activarAccordion() {
             document.querySelectorAll(".accordion").forEach((accordion) => {
                 accordion.addEventListener("click", function () {
                     this.classList.toggle("active");
                     const panel = this.nextElementSibling;
                     panel.style.display = panel.style.display === "block" ? "none" : "block";
+
+                    const pacienteDiv = this.closest(".paciente");
+                    if (pacienteDiv) {
+                        const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                        if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                        if (this.classList.contains("fecha-btn")) {
+                            const fecha = this.textContent.trim();
+                            estadoDesplegables[paciente][fecha] = this.classList.contains("active");
+                        } else {
+                            estadoDesplegables[paciente]._abierto = this.classList.contains("active");
+                        }
+                    }
                 });
             });
         }
 
+        // 🔥 Bucle para aplicar el filtro automáticamente en cada actualización
+        setInterval(() => {
+            filtrar();
+        }, 100);
+
+        // 🔥 Función de filtrado para nombres y fechas
         function filtrar() {
             let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase().trim();
             let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase().trim();
             let pacientes = document.querySelectorAll(".paciente");
 
-            // 🔹 Si los buscadores están vacíos, mostrar todos los pacientes
             if (inputNombre === "" && inputFecha === "") {
                 pacientes.forEach(paciente => paciente.style.display = "block");
                 document.querySelectorAll(".fecha").forEach(fechaDiv => fechaDiv.style.display = "block");
-                return; // 🔥 Salir de la función para evitar procesamiento innecesario
+                return;
             }
 
             pacientes.forEach(paciente => {
@@ -241,12 +276,10 @@
                     let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
                     let coincideFecha = inputFecha.length > 0 && fechaTexto.includes(inputFecha);
 
-                    // 🔥 Mostrar solo fechas que coincidan
                     fechaDiv.style.display = coincideFecha ? "block" : "none";
                     if (coincideFecha) fechaVisible = true;
                 });
 
-                // 🔹 Mostrar pacientes solo si coinciden con el nombre o tienen una fecha visible
                 paciente.style.display = coincideNombre || fechaVisible ? "block" : "none";
             });
         }
