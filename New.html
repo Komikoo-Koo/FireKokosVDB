@@ -194,22 +194,49 @@
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-       async function cargarPacientes() {
+      async function cargarPacientes() {
     try {
-        const user = window.auth.currentUser;
-        if (!user) {
-            console.warn("❌ No hay usuario autenticado.");
-            return;
-        }
+        // 🔥 Esperar a que el usuario esté autenticado
+        window.auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                console.warn("❌ No hay usuario autenticado.");
+                return;
+            }
 
-        console.log("📡 Cargando datos desde Firebase...");
+            console.log("📡 Usuario autenticado:", user.uid);
 
-        // 🔥 Escuchar cambios en la base de datos y actualizar la lista
-        window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
+            // 🔥 Obtener el rol del usuario en Firebase
+            const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
+            const usuarioData = snapshot.val();
+
+            if (!usuarioData) {
+                console.error("⚠ No se encontró información del usuario en la base de datos.");
+                return;
+            }
+
+            console.log("📡 Datos del usuario:", usuarioData);
+
+            // 🔄 Si el rol del usuario ha cambiado, forzar actualización del token
+            user.getIdToken(true).then(() => {
+                console.log("🔄 Token actualizado, recargando datos...");
+            }).catch((error) => {
+                console.error("⚠ Error al actualizar el token:", error);
+            });
+
+            // 🔥 Cargar datos dependiendo del rol
+            if (usuarioData.rol === "medico") {
+                console.log("✅ Usuario es médico, cargando todos los pacientes...");
+                window.db.ref("Pacientes").on("value", actualizarListaPacientes);
+            } else {
+                console.log("✅ Usuario es paciente, cargando solo su información...");
+                window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
+            }
+        });
     } catch (error) {
         console.error("🔥 Error al cargar pacientes:", error);
     }
 }
+
 
 
         function actualizarListaPacientes(snapshot) {
