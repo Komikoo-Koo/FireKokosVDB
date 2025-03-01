@@ -137,46 +137,39 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
 
     <script>
+        async function cargarConfigFirebase() {
+            try {
+                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
+                const script = await response.text();
+                eval(script); // 🔥 Carga la configuración de Firebase
 
-async function cargarConfigFirebase() {
-    try {
-        console.log("🚀 Intentando cargar Firebase Config...");
-        const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
-        const script = await response.text();
-        eval(script); // 🔥 Carga la configuración de Firebase
+                if (typeof firebaseConfig !== "undefined") {
+                    firebase.initializeApp(firebaseConfig);
+                    window.auth = firebase.auth();
+                    window.db = firebase.database();
 
-        if (typeof firebaseConfig !== "undefined") {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-                console.log("✅ Firebase inicializado correctamente.");
-            } else {
-                console.warn("⚠ Firebase ya estaba inicializado.");
-            }
+                    console.log("🔥 Firebase inicializado correctamente.");
 
-            window.auth = firebase.auth();
-            window.db = firebase.database();
+                    // 🔥 Verificar si la sesión está iniciada
+                    window.auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            console.log("✅ Sesión activa:", user.email);
+                            cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
+                        } else {
+                            console.log("❌ No hay sesión iniciada.");
+                            alert("Debes iniciar sesión para ver los pacientes.");
+                        }
+                    });
 
-            console.log("🔥 Firebase está listo para usarse.");
-
-            // 🔥 Verificar si la sesión está iniciada
-            window.auth.onAuthStateChanged(user => {
-                console.log("🟢 Evento onAuthStateChanged se ejecutó.");
-                if (user) {
-                    console.log("✅ Sesión activa:", user.email);
-                    cargarPacientes(user.uid);
                 } else {
-                    console.log("❌ No hay usuario autenticado.");
+                    console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
                 }
-            });
-
-        } else {
-            console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
+            } catch (error) {
+                console.error("🔥 Error al cargar Firebase Config:", error);
+            }
         }
-    } catch (error) {
-        console.error("🔥 Error al cargar Firebase Config:", error);
-    }
-}
 
+        cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
     </script>
 
     <script>
@@ -201,34 +194,22 @@ async function cargarConfigFirebase() {
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-    async function cargarPacientes(uid) {
+       async function cargarPacientes() {
     try {
-        if (!uid) {
+        const user = window.auth.currentUser;
+        if (!user) {
             console.warn("❌ No hay usuario autenticado.");
             return;
         }
 
-        // 🔥 Verificar el rol del usuario
-        const snapshot = await window.db.ref("usuarios/" + uid).once("value");
-        const usuarioData = snapshot.val();
+        console.log("📡 Cargando datos desde Firebase...");
 
-        if (!usuarioData) {
-            console.warn("⚠ No se encontró el usuario en la base de datos.");
-            return;
-        }
-
-        if (usuarioData.rol === "medico") {
-            console.log("✅ Usuario es médico, cargando todos los pacientes...");
-            window.db.ref("Pacientes").on("value", actualizarListaPacientes);
-        } else {
-            console.log("✅ Usuario es paciente, cargando solo su información...");
-            window.db.ref("Pacientes/" + uid).on("value", actualizarListaPacientes);
-        }
+        // 🔥 Escuchar cambios en la base de datos y actualizar la lista
+        window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
     } catch (error) {
         console.error("🔥 Error al cargar pacientes:", error);
     }
 }
-
 
 
         function actualizarListaPacientes(snapshot) {
