@@ -13,7 +13,7 @@
             --accordion-hover: #0056b3;
             --panel-bg: white;
             --panel-border: #007BFF;
-            --fecha-bg: #f9a825;
+            --fecha-bg: #f9a825; /* ✅ Amarillo */
             --fecha-border: #f9a825;
         }
 
@@ -24,7 +24,7 @@
             --accordion-hover: #666;
             --panel-bg: #222;
             --panel-border: #666;
-            --fecha-bg: #b58d00;
+            --fecha-bg: #b58d00; /* ✅ Amarillo oscuro */
             --fecha-border: #b58d00;
         }
 
@@ -120,8 +120,7 @@
     <div id="lista-pacientes-container">
         <div id="lista-pacientes"></div>
     </div>
-
-    <!-- 🔥 Cargar Firebase (asegurar que esté antes del script que lo usa) -->
+    <!-- 🔥 Cargar Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
@@ -161,203 +160,204 @@
 
         cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
     </script>
-<script>
-    let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-    async function cargarPacientes() {
-        try {
-            const user = window.auth.currentUser;
-            if (!user) {
-                console.warn("❌ No hay usuario autenticado.");
-                return;
+    <script>
+        let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
+
+        async function cargarPacientes() {
+            try {
+                const user = window.auth.currentUser;
+                if (!user) {
+                    console.warn("❌ No hay usuario autenticado.");
+                    return;
+                }
+
+                // 🔥 Verificar si el usuario tiene permisos para ver la lista de pacientes
+                const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
+                const usuarioData = snapshot.val();
+                
+                if (!usuarioData || usuarioData.rol !== "medico") {
+                    console.warn("⛔ Acceso denegado. Solo los médicos pueden ver la lista de pacientes.");
+                    alert("No tienes permiso para ver esta información.");
+                    return;
+                }
+
+                // 🔥 Cargar la lista de pacientes
+                window.db.ref("Pacientes").on("value", actualizarListaPacientes);
+            } catch (error) {
+                console.error("🔥 Error al cargar pacientes:", error);
             }
-
-            // 🔥 Verificar si el usuario tiene permisos para ver la lista de pacientes
-            const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
-            const usuarioData = snapshot.val();
-            
-            if (!usuarioData || usuarioData.rol !== "medico") {
-                console.warn("⛔ Acceso denegado. Solo los médicos pueden ver la lista de pacientes.");
-                alert("No tienes permiso para ver esta información.");
-                return;
-            }
-
-            // 🔥 Cargar la lista de pacientes
-            window.db.ref("Pacientes").on("value", actualizarListaPacientes);
-        } catch (error) {
-            console.error("🔥 Error al cargar pacientes:", error);
         }
-    }
+        function actualizarListaPacientes(snapshot) {
+            const datosFirebase = snapshot.val() || {};
+            console.log("🔥 Datos actualizados:", datosFirebase);
 
-    function actualizarListaPacientes(snapshot) {
-        const datosFirebase = snapshot.val() || {};
-        console.log("🔥 Datos actualizados:", datosFirebase);
+            const listaPacientes = document.getElementById("lista-pacientes");
+            listaPacientes.innerHTML = "";
 
-        const listaPacientes = document.getElementById("lista-pacientes");
-        listaPacientes.innerHTML = "";
+            Object.keys(datosFirebase).forEach((paciente) => {
+                const fechas = datosFirebase[paciente];
 
-        Object.keys(datosFirebase).forEach((paciente) => {
-            const fechas = datosFirebase[paciente];
-
-            // 🔥 Crear la estructura para cada paciente
-            const pacienteDiv = document.createElement("div");
-            pacienteDiv.className = "paciente";
-            pacienteDiv.innerHTML = `
-                <button class="accordion">${paciente} ⬇</button>
-                <div class="panel"></div>
-            `;
-            listaPacientes.appendChild(pacienteDiv);
-
-            const panelPaciente = pacienteDiv.querySelector(".panel");
-
-            Object.keys(fechas).forEach((fecha) => {
-                const datos = fechas[fecha];
-
-                // 🔥 Estructura para mostrar fechas y datos médicos
-                const fechaDiv = document.createElement("div");
-                fechaDiv.className = "fecha";
-                fechaDiv.innerHTML = `
-                    <button class="accordion fecha-btn">${fecha} 📅</button>
-                    <div class="panel fecha-panel">
-                        ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
-                        ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
-                        ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
-                        ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
-                        ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
-                    </div>
+                // 🔥 Crear la estructura para cada paciente
+                const pacienteDiv = document.createElement("div");
+                pacienteDiv.className = "paciente";
+                pacienteDiv.innerHTML = `
+                    <button class="accordion">${paciente} ⬇</button>
+                    <div class="panel"></div>
                 `;
-                panelPaciente.appendChild(fechaDiv);
+                listaPacientes.appendChild(pacienteDiv);
+
+                const panelPaciente = pacienteDiv.querySelector(".panel");
+
+                Object.keys(fechas).forEach((fecha) => {
+                    const datos = fechas[fecha];
+
+                    // 🔥 Estructura para mostrar fechas y datos médicos
+                    const fechaDiv = document.createElement("div");
+                    fechaDiv.className = "fecha";
+                    fechaDiv.innerHTML = `
+                        <button class="accordion fecha-btn">${fecha} 📅</button>
+                        <div class="panel fecha-panel">
+                            ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
+                            ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
+                            ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
+                            ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
+                            ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
+                        </div>
+                    `;
+                    panelPaciente.appendChild(fechaDiv);
+                });
             });
-        });
 
-        activarAccordion();
+            activarAccordion();
 
-        // 🔥 Restaurar el estado de los acordeones después de actualizar los datos
-        document.querySelectorAll(".paciente .accordion").forEach((btn) => {
-            const paciente = btn.textContent.trim();
-            if (estadoDesplegables[paciente] && estadoDesplegables[paciente]._abierto) {
-                btn.classList.add("active");
-                btn.nextElementSibling.style.display = "block";
-            }
-        });
-
-        document.querySelectorAll(".fecha .accordion").forEach((btn) => {
-            const pacienteDiv = btn.closest(".paciente");
-            if (!pacienteDiv) return;
-            const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
-            const fecha = btn.textContent.trim();
-            if (estadoDesplegables[paciente] && estadoDesplegables[paciente][fecha]) {
-                btn.classList.add("active");
-                btn.nextElementSibling.style.display = "block";
-            }
-        });
-    }
-
-    function activarAccordion() {
-        document.querySelectorAll(".accordion").forEach((accordion) => {
-            accordion.addEventListener("click", function () {
-                this.classList.toggle("active");
-                const panel = this.nextElementSibling;
-                panel.style.display = panel.style.display === "block" ? "none" : "block";
-
-                // 🔥 Guardar el estado de los acordeones
-                const pacienteDiv = this.closest(".paciente");
-                if (pacienteDiv) {
-                    const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
-                    if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
-                    if (this.classList.contains("fecha-btn")) {
-                        const fecha = this.textContent.trim();
-                        estadoDesplegables[paciente][fecha] = this.classList.contains("active");
-                    } else {
-                        estadoDesplegables[paciente]._abierto = this.classList.contains("active");
-                    }
+            // 🔥 Restaurar el estado de los acordeones después de actualizar los datos
+            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
+                const paciente = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente]._abierto) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
                 }
             });
-        });
-    }
-</script>
-<script>
-    function filtrar() {
-        let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
-        let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
-        let pacientes = document.querySelectorAll(".paciente");
 
-        pacientes.forEach((paciente) => {
-            let nombre = paciente.querySelector(".accordion").textContent.toLowerCase();
-            let fechas = paciente.querySelectorAll(".fecha");
-
-            let coincideNombre = inputNombre.length > 0 && nombre.includes(inputNombre);
-            let fechaVisible = false;
-
-            fechas.forEach((fechaDiv) => {
-                let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
-                let coincideFecha = fechaTexto.includes(inputFecha);
-                fechaDiv.style.display = coincideFecha ? "block" : "none";
-                if (coincideFecha) fechaVisible = true;
-            });
-
-            // 🔥 Lógica para mostrar u ocultar pacientes según filtros aplicados
-            if (inputNombre.length > 0 && inputFecha.length > 0) {
-                paciente.style.display = coincideNombre && fechaVisible ? "block" : "none";
-            } else if (inputNombre.length > 0) {
-                paciente.style.display = coincideNombre ? "block" : "none";
-                if (coincideNombre) mantenerFechasVisibles(paciente);
-            } else if (inputFecha.length > 0) {
-                paciente.style.display = fechaVisible ? "block" : "none";
-            } else {
-                paciente.style.display = "block";
-                fechas.forEach((fechaDiv) => (fechaDiv.style.display = "block"));
-            }
-        });
-
-        // 🔹 Si solo hay un paciente visible y se busca una fecha, se ocultan los demás
-        let visibles = Array.from(pacientes).filter((p) => p.style.display === "block");
-        if (visibles.length === 1 && inputFecha.length > 0) {
-            pacientes.forEach((p) => {
-                if (!visibles.includes(p)) p.style.display = "none";
+            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
+                const pacienteDiv = btn.closest(".paciente");
+                if (!pacienteDiv) return;
+                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                const fecha = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente][fecha]) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
+                }
             });
         }
 
-        setTimeout(actualizarFechasVisibles, 100);
-    }
+        function activarAccordion() {
+            document.querySelectorAll(".accordion").forEach((accordion) => {
+                accordion.addEventListener("click", function () {
+                    this.classList.toggle("active");
+                    const panel = this.nextElementSibling;
+                    panel.style.display = panel.style.display === "block" ? "none" : "block";
 
-    function actualizarFechasVisibles() {
-        const pacientes = document.querySelectorAll(".paciente");
-        pacientes.forEach((paciente) => {
-            const fechas = paciente.querySelectorAll(".fecha");
-            if (paciente.style.display === "block") {
-                fechas.forEach((fechaDiv) => {
-                    let coincideFecha = true;
-                    let fechaBtn = fechaDiv.querySelector(".fecha-btn");
-                    if (!fechaBtn) return;
-                    let fechaTexto = fechaBtn.textContent.toLowerCase();
-                    if (document.getElementById("buscar-fecha").value.length > 0) {
-                        let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
-                        coincideFecha = fechaTexto.includes(inputFecha);
+                    // 🔥 Guardar el estado de los acordeones
+                    const pacienteDiv = this.closest(".paciente");
+                    if (pacienteDiv) {
+                        const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                        if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
+                        if (this.classList.contains("fecha-btn")) {
+                            const fecha = this.textContent.trim();
+                            estadoDesplegables[paciente][fecha] = this.classList.contains("active");
+                        } else {
+                            estadoDesplegables[paciente]._abierto = this.classList.contains("active");
+                        }
                     }
+                });
+            });
+        }
+    </script>
+
+    <script>
+        function filtrar() {
+            let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
+            let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+            let pacientes = document.querySelectorAll(".paciente");
+
+            pacientes.forEach((paciente) => {
+                let nombre = paciente.querySelector(".accordion").textContent.toLowerCase();
+                let fechas = paciente.querySelectorAll(".fecha");
+
+                let coincideNombre = inputNombre.length > 0 && nombre.includes(inputNombre);
+                let fechaVisible = false;
+
+                fechas.forEach((fechaDiv) => {
+                    let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
+                    let coincideFecha = fechaTexto.includes(inputFecha);
                     fechaDiv.style.display = coincideFecha ? "block" : "none";
+                    if (coincideFecha) fechaVisible = true;
+                });
+
+                // 🔥 Lógica para mostrar u ocultar pacientes según filtros aplicados
+                if (inputNombre.length > 0 && inputFecha.length > 0) {
+                    paciente.style.display = coincideNombre && fechaVisible ? "block" : "none";
+                } else if (inputNombre.length > 0) {
+                    paciente.style.display = coincideNombre ? "block" : "none";
+                    if (coincideNombre) mantenerFechasVisibles(paciente);
+                } else if (inputFecha.length > 0) {
+                    paciente.style.display = fechaVisible ? "block" : "none";
+                } else {
+                    paciente.style.display = "block";
+                    fechas.forEach((fechaDiv) => (fechaDiv.style.display = "block"));
+                }
+            });
+
+            // 🔹 Si solo hay un paciente visible y se busca una fecha, se ocultan los demás
+            let visibles = Array.from(pacientes).filter((p) => p.style.display === "block");
+            if (visibles.length === 1 && inputFecha.length > 0) {
+                pacientes.forEach((p) => {
+                    if (!visibles.includes(p)) p.style.display = "none";
                 });
             }
-        });
-    }
 
-    function mantenerFechasVisibles(paciente) {
-        let panel = paciente.querySelector(".panel");
-        let fechas = paciente.querySelectorAll(".fecha");
-        if (panel.style.display === "block") {
-            fechas.forEach((fechaDiv) => (fechaDiv.style.display = "block"));
+            setTimeout(actualizarFechasVisibles, 100);
         }
-    }
 
-    // 🔥 Configurar filtrado automático cada 50ms
-    document.addEventListener("DOMContentLoaded", function () {
-        setInterval(() => {
-            filtrar();
-        }, 50);
-    });
+        function actualizarFechasVisibles() {
+            const pacientes = document.querySelectorAll(".paciente");
+            pacientes.forEach((paciente) => {
+                const fechas = paciente.querySelectorAll(".fecha");
+                if (paciente.style.display === "block") {
+                    fechas.forEach((fechaDiv) => {
+                        let coincideFecha = true;
+                        let fechaBtn = fechaDiv.querySelector(".fecha-btn");
+                        if (!fechaBtn) return;
+                        let fechaTexto = fechaBtn.textContent.toLowerCase();
+                        if (document.getElementById("buscar-fecha").value.length > 0) {
+                            let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+                            coincideFecha = fechaTexto.includes(inputFecha);
+                        }
+                        fechaDiv.style.display = coincideFecha ? "block" : "none";
+                    });
+                }
+            });
+        }
 
-    // 🔥 Iniciar carga de pacientes después de cargar Firebase
-    cargarPacientes();
-</script>
+        function mantenerFechasVisibles(paciente) {
+            let panel = paciente.querySelector(".panel");
+            let fechas = paciente.querySelectorAll(".fecha");
+            if (panel.style.display === "block") {
+                fechas.forEach((fechaDiv) => (fechaDiv.style.display = "block"));
+            }
+        }
+
+        // 🔥 Configurar filtrado automático cada 50ms
+        document.addEventListener("DOMContentLoaded", function () {
+            setInterval(() => {
+                filtrar();
+            }, 50);
+        });
+
+        // 🔥 Iniciar carga de pacientes después de cargar Firebase
+        cargarPacientes();
+    </script>
 </body>
 </html>
