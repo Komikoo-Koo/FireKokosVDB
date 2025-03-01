@@ -137,6 +137,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
 
     <script>
+
 async function cargarConfigFirebase() {
     try {
         console.log("🚀 Intentando cargar Firebase Config...");
@@ -145,14 +146,18 @@ async function cargarConfigFirebase() {
         eval(script); // 🔥 Carga la configuración de Firebase
 
         if (typeof firebaseConfig !== "undefined") {
-            firebase.initializeApp(firebaseConfig);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig); // 🔥 Inicializa Firebase solo si no está inicializado
+                console.log("✅ Firebase inicializado correctamente.");
+            }
+
             window.auth = firebase.auth();
             window.db = firebase.database();
 
-            console.log("🔥 Firebase inicializado correctamente.");
+            console.log("🔥 Firebase está listo para usarse.");
 
-            // 🔥 PRUEBA: Verificar si onAuthStateChanged se ejecuta
-            window.auth.onAuthStateChanged((user) => {
+            // 🔥 Verificar si la sesión está iniciada
+            window.auth.onAuthStateChanged(async (user) => {
                 console.log("🟢 Evento onAuthStateChanged se ejecutó.");
                 if (user) {
                     console.log("✅ Sesión activa:", user.email);
@@ -169,8 +174,6 @@ async function cargarConfigFirebase() {
         console.error("🔥 Error al cargar Firebase Config:", error);
     }
 }
-
-
 
     </script>
 
