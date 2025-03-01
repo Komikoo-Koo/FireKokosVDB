@@ -319,5 +319,122 @@
         });
     }
 </script>
+<script>
+    function filtrar() {
+        let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
+        let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+        let pacientes = document.querySelectorAll(".paciente");
+
+        pacientes.forEach((paciente) => {
+            let nombre = paciente.querySelector(".accordion").textContent.toLowerCase();
+            let fechas = paciente.querySelectorAll(".fecha");
+
+            let coincideNombre = inputNombre.length > 0 && nombre.includes(inputNombre);
+            let fechaVisible = false;
+
+            fechas.forEach((fechaDiv) => {
+                let fechaTexto = fechaDiv.querySelector(".fecha-btn").textContent.toLowerCase();
+                let coincideFecha = fechaTexto.includes(inputFecha);
+                fechaDiv.style.display = coincideFecha ? "block" : "none";
+                if (coincideFecha) fechaVisible = true;
+            });
+
+            // 🔥 Lógica para mostrar u ocultar pacientes según filtros aplicados
+            if (inputNombre.length > 0 && inputFecha.length > 0) {
+                paciente.style.display = coincideNombre && fechaVisible ? "block" : "none";
+            } else if (inputNombre.length > 0) {
+                paciente.style.display = coincideNombre ? "block" : "none";
+                if (coincideNombre) mantenerFechasVisibles(paciente);
+            } else if (inputFecha.length > 0) {
+                paciente.style.display = fechaVisible ? "block" : "none";
+            } else {
+                paciente.style.display = "block";
+                fechas.forEach((fechaDiv) => (fechaDiv.style.display = "block"));
+            }
+        });
+
+        // 🔹 Si solo hay un paciente visible y se busca una fecha, se ocultan los demás
+        let visibles = Array.from(pacientes).filter((p) => p.style.display === "block");
+        if (visibles.length === 1 && inputFecha.length > 0) {
+            pacientes.forEach((p) => {
+                if (!visibles.includes(p)) p.style.display = "none";
+            });
+        }
+
+        setTimeout(actualizarFechasVisibles, 100);
+    }
+
+    function actualizarFechasVisibles() {
+        const pacientes = document.querySelectorAll(".paciente");
+        pacientes.forEach((paciente) => {
+            const fechas = paciente.querySelectorAll(".fecha");
+            if (paciente.style.display === "block") {
+                fechas.forEach((fechaDiv) => {
+                    let coincideFecha = true;
+                    let fechaBtn = fechaDiv.querySelector(".fecha-btn");
+                    if (!fechaBtn) return;
+                    let fechaTexto = fechaBtn.textContent.toLowerCase();
+                    if (document.getElementById("buscar-fecha").value.length > 0) {
+                        let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
+                        coincideFecha = fechaTexto.includes(inputFecha);
+                    }
+                    fechaDiv.style.display = coincideFecha ? "block" : "none";
+                });
+            }
+        });
+    }
+
+    function mantenerFechasVisibles(paciente) {
+        let panel = paciente.querySelector(".panel");
+        let fechas = paciente.querySelectorAll(".fecha");
+        if (panel.style.display === "block") {
+            fechas.forEach((fechaDiv) => (fechaDiv.style.display = "block"));
+        }
+    }
+
+    // 🔥 Configurar filtrado automático cada 50ms
+    document.addEventListener("DOMContentLoaded", function () {
+        setInterval(() => {
+            filtrar();
+        }, 50);
+    });
+
+    // 🔥 Modo Oscuro
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("toggle-mode");
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            const isDarkMode = document.body.classList.contains("dark-mode");
+            localStorage.setItem("dark-mode", isDarkMode);
+            toggleBtn.textContent = isDarkMode ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
+
+            // 🔥 Aplicar colores correctos después de cambiar de modo
+            corregirColores();
+        }
+
+        toggleBtn.addEventListener("click", toggleDarkMode);
+
+        if (localStorage.getItem("dark-mode") === "true") {
+            document.body.classList.add("dark-mode");
+            toggleBtn.textContent = "☀️ Modo Claro";
+            corregirColores();
+        }
+    });
+
+    function corregirColores() {
+        document.querySelectorAll(".fecha-btn").forEach((btn) => {
+            btn.style.backgroundColor = "var(--fecha-bg)";
+            btn.style.borderLeft = "3px solid var(--fecha-border)";
+        });
+
+        document.querySelectorAll(".fecha-panel").forEach((panel) => {
+            panel.style.borderLeft = "3px solid var(--fecha-border)";
+        });
+    }
+
+    // 🔥 Iniciar carga de pacientes después de cargar Firebase
+    cargarPacientes();
+</script>
 </body>
 </html>
