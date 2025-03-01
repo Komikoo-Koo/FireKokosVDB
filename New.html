@@ -194,30 +194,23 @@
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-        async function cargarPacientes() {
-            try {
-                const user = window.auth.currentUser;
-                if (!user) {
-                    console.warn("❌ No hay usuario autenticado.");
-                    return;
-                }
-
-                // 🔥 Verificar si el usuario tiene permisos para ver la lista de pacientes
-                const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
-                const usuarioData = snapshot.val();
-                
-                if (!usuarioData || usuarioData.rol !== "medico") {
-                    console.warn("⛔ Acceso denegado. Solo los médicos pueden ver la lista de pacientes.");
-                    alert("No tienes permiso para ver esta información.");
-                    return;
-                }
-
-                // 🔥 Cargar la lista de pacientes
-                window.db.ref("Pacientes").on("value", actualizarListaPacientes);
-            } catch (error) {
-                console.error("🔥 Error al cargar pacientes:", error);
-            }
+       async function cargarPacientes() {
+    try {
+        const user = window.auth.currentUser;
+        if (!user) {
+            console.warn("❌ No hay usuario autenticado.");
+            return;
         }
+
+        console.log("📡 Cargando datos desde Firebase...");
+
+        // 🔥 Escuchar cambios en la base de datos y actualizar la lista
+        window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
+    } catch (error) {
+        console.error("🔥 Error al cargar pacientes:", error);
+    }
+}
+
 
         function actualizarListaPacientes(snapshot) {
             const datosFirebase = snapshot.val() || {};
