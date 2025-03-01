@@ -91,16 +91,6 @@
             border-left: 3px solid var(--panel-border);
         }
 
-        /* 🔥 Corrección: Se aplica el color correcto a las fechas */
-        .fecha .accordion {
-            background-color: var(--fecha-bg);
-            border-left: 3px solid var(--fecha-border);
-        }
-
-        .fecha .active, .fecha .accordion:hover {
-            background-color: var(--fecha-border);
-        }
-
         #toggle-mode {
             padding: 10px 20px;
             font-size: 16px;
@@ -114,6 +104,17 @@
         #toggle-mode:hover {
             background-color: var(--accordion-hover);
         }
+
+        .hidden {
+            display: none;
+        }
+
+        #mensaje-sesion {
+            margin-top: 20px;
+            padding: 10px;
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -124,13 +125,13 @@
             <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
             <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
         </div>
-        <button onclick="cerrarSesion()">Cerrar Sesión</button>
+        <button id="cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
 
+    <div id="mensaje-sesion" class="hidden">No has iniciado sesión. <a href="login.html">Iniciar sesión</a></div>
     <div id="lista-pacientes-container">
         <div id="lista-pacientes"></div>
     </div>
-
     <!-- 🔥 Cargar Firebase (asegurar que esté antes del script que lo usa) -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
@@ -154,10 +155,12 @@
                     window.auth.onAuthStateChanged((user) => {
                         if (user) {
                             console.log("✅ Sesión activa:", user.email);
+                            document.getElementById("mensaje-sesion").classList.add("hidden"); // Ocultar mensaje de sesión
                             cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
                         } else {
                             console.log("❌ No hay sesión iniciada.");
-                            alert("Debes iniciar sesión para ver los pacientes.");
+                            document.getElementById("mensaje-sesion").classList.remove("hidden"); // Mostrar mensaje de sesión
+                            document.getElementById("lista-pacientes-container").classList.add("hidden"); // Ocultar lista de pacientes
                         }
                     });
 
@@ -169,48 +172,47 @@
             }
         }
 
+        function cerrarSesion() {
+            if (window.auth) {
+                window.auth.signOut().then(() => {
+                    console.log("✅ Sesión cerrada exitosamente.");
+                    document.getElementById("mensaje-sesion").classList.remove("hidden");
+                    document.getElementById("lista-pacientes-container").classList.add("hidden");
+                }).catch((error) => {
+                    console.error("🔥 Error al cerrar sesión:", error);
+                });
+            }
+        }
+
         cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const toggleBtn = document.getElementById("toggle-mode");
-
-            function toggleDarkMode() {
-                document.body.classList.toggle("dark-mode");
-                const isDarkMode = document.body.classList.contains("dark-mode");
-                localStorage.setItem("dark-mode", isDarkMode);
-                toggleBtn.textContent = isDarkMode ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
-            }
-
-            toggleBtn.addEventListener("click", toggleDarkMode);
-
-            if (localStorage.getItem("dark-mode") === "true") {
-                document.body.classList.add("dark-mode");
-                toggleBtn.textContent = "☀️ Modo Claro";
-            }
-        });
     </script>
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-       async function cargarPacientes() {
-    try {
-        const user = window.auth.currentUser;
-        if (!user) {
-            console.warn("❌ No hay usuario autenticado.");
-            return;
+        async function cargarPacientes() {
+            try {
+                const user = window.auth.currentUser;
+                if (!user) {
+                    console.warn("❌ No hay usuario autenticado.");
+                    return;
+                }
+
+                // 🔥 Verificar si el usuario tiene permisos para ver la lista de pacientes
+                const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
+                const usuarioData = snapshot.val();
+                
+                if (!usuarioData || usuarioData.rol !== "medico") {
+                    console.warn("⛔ Acceso denegado. Solo los médicos pueden ver la lista de pacientes.");
+                    alert("No tienes permiso para ver esta información.");
+                    return;
+                }
+
+                // 🔥 Cargar la lista de pacientes
+                window.db.ref("Pacientes").on("value", actualizarListaPacientes);
+            } catch (error) {
+                console.error("🔥 Error al cargar pacientes:", error);
+            }
         }
-
-        console.log("📡 Cargando datos desde Firebase...");
-
-        // 🔥 Escuchar cambios en la base de datos y actualizar la lista
-        window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
-    } catch (error) {
-        console.error("🔥 Error al cargar pacientes:", error);
-    }
-}
-
 
         function actualizarListaPacientes(snapshot) {
             const datosFirebase = snapshot.val() || {};
@@ -299,6 +301,7 @@
             });
         }
     </script>
+
     <script>
         function filtrar() {
             let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
