@@ -461,6 +461,79 @@ function mantenerFechasVisibles(paciente) {
         }
 
         onValue(pacientesRef, actualizarListaPacientes);
+    <script>
+    // 🔥 Asegurar que Firebase ya está cargado
+    async function inicializarFirebase() {
+        try {
+            const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
+            const script = await response.text();
+            eval(script); // 🔥 Carga la configuración de Firebase
+
+            if (typeof firebaseConfig !== "undefined") {
+                firebase.initializeApp(firebaseConfig);
+                window.db = firebase.database();
+                console.log("🔥 Firebase inicializado correctamente.");
+
+                // 🔥 Escuchar cambios en tiempo real
+                window.db.ref("Pacientes").on("value", actualizarListaPacientes);
+
+            } else {
+                console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
+            }
+        } catch (error) {
+            console.error("🔥 Error al cargar Firebase Config:", error);
+        }
+    }
+
+    // 🔥 Función para actualizar la lista cuando haya cambios en Firebase
+    function actualizarListaPacientes(snapshot) {
+        const datosFirebase = snapshot.val() || {};
+        console.log("🔥 Datos actualizados en tiempo real:", datosFirebase);
+
+        const listaPacientes = document.getElementById('lista-pacientes');
+        listaPacientes.innerHTML = '';
+
+        Object.keys(datosFirebase).forEach(paciente => {
+            const fechas = datosFirebase[paciente];
+
+            // 🔥 Crear la estructura para cada paciente
+            const pacienteDiv = document.createElement('div');
+            pacienteDiv.className = 'paciente';
+            pacienteDiv.innerHTML = `
+                <button class="accordion">${paciente} ⬇</button>
+                <div class="panel"></div>
+            `;
+            listaPacientes.appendChild(pacienteDiv);
+
+            const panelPaciente = pacienteDiv.querySelector(".panel");
+
+            Object.keys(fechas).forEach(fecha => {
+                const datos = fechas[fecha];
+
+                // 🔥 Estructura para mostrar fechas y datos médicos
+                const fechaDiv = document.createElement('div');
+                fechaDiv.className = 'fecha';
+                fechaDiv.innerHTML = `
+                    <button class="accordion fecha-btn">${fecha} 📅</button>
+                    <div class="panel fecha-panel">
+                        ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ''}
+                        ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ''}
+                        ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ''}
+                        ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ''}
+                        ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ''}
+                    </div>
+                `;
+                panelPaciente.appendChild(fechaDiv);
+            });
+        });
+
+        activarAccordion();
+    }
+
+    // 🔥 Inicializar Firebase y cargar datos en tiempo real
+    inicializarFirebase();
+</script>
+
     </script>
 </body>
 </html>
