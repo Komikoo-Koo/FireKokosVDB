@@ -299,25 +299,49 @@ function mantenerFechasVisibles(paciente) {
         let estadoDesplegables = {};
 
         function actualizarListaPacientes(snapshot) {
-            datosFirebase = snapshot.val() || {};
+    datosFirebase = snapshot.val() || {};
 
-            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
-                const paciente = btn.textContent.trim();
-                if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
-                estadoDesplegables[paciente]._abierto = btn.classList.contains("active");
-            });
+    // 🔥 Limpiar el contenedor antes de actualizar
+    const listaPacientes = document.getElementById('lista-pacientes');
+    listaPacientes.innerHTML = '';
 
-            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
-                const pacienteDiv = btn.closest(".paciente");
-                if (!pacienteDiv) return;
-                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
-                const fecha = btn.textContent.trim();
-                if (!estadoDesplegables[paciente]) estadoDesplegables[paciente] = {};
-                estadoDesplegables[paciente][fecha] = btn.classList.contains("active");
-            });
+    Object.keys(datosFirebase).forEach(paciente => {
+        const fechas = datosFirebase[paciente];
 
-            mostrarPacientes();
-        }
+        // 🔥 Crear la estructura para cada paciente
+        const pacienteDiv = document.createElement('div');
+        pacienteDiv.className = 'paciente';
+        pacienteDiv.innerHTML = `
+            <button class="accordion">${paciente} ⬇</button>
+            <div class="panel"></div>
+        `;
+        listaPacientes.appendChild(pacienteDiv);
+
+        const panelPaciente = pacienteDiv.querySelector(".panel");
+
+        Object.keys(fechas).forEach(fecha => {
+            const datos = fechas[fecha];
+
+            // 🔥 Estructura para mostrar fechas y datos médicos
+            const fechaDiv = document.createElement('div');
+            fechaDiv.className = 'fecha';
+            fechaDiv.innerHTML = `
+                <button class="accordion fecha-btn">${fecha} 📅</button>
+                <div class="panel fecha-panel">
+                    ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ''}
+                    ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ''}
+                    ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ''}
+                    ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ''}
+                    ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ''}
+                </div>
+            `;
+            panelPaciente.appendChild(fechaDiv);
+        });
+    });
+
+    activarAccordion();
+}
+
 
         function mostrarPacientes() {
             const listaPacientes = document.getElementById('lista-pacientes');
