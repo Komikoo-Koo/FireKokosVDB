@@ -147,8 +147,10 @@ async function cargarConfigFirebase() {
 
         if (typeof firebaseConfig !== "undefined") {
             if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig); // 🔥 Inicializa Firebase solo si no está inicializado
+                firebase.initializeApp(firebaseConfig);
                 console.log("✅ Firebase inicializado correctamente.");
+            } else {
+                console.warn("⚠ Firebase ya estaba inicializado.");
             }
 
             window.auth = firebase.auth();
@@ -157,7 +159,7 @@ async function cargarConfigFirebase() {
             console.log("🔥 Firebase está listo para usarse.");
 
             // 🔥 Verificar si la sesión está iniciada
-            window.auth.onAuthStateChanged(async (user) => {
+            window.auth.onAuthStateChanged(user => {
                 console.log("🟢 Evento onAuthStateChanged se ejecutó.");
                 if (user) {
                     console.log("✅ Sesión activa:", user.email);
