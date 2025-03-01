@@ -194,7 +194,7 @@
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-      async function cargarPacientes() {
+       async function cargarPacientes() {
     try {
         const user = window.auth.currentUser;
         if (!user) {
@@ -202,22 +202,10 @@
             return;
         }
 
-        // 🔥 Leer datos del usuario autenticado
-        const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
-        const usuarioData = snapshot.val();
+        console.log("📡 Cargando datos desde Firebase...");
 
-        if (!usuarioData) {
-            console.warn("⚠ El usuario no existe en la base de datos.");
-            return;
-        }
-
-        if (usuarioData.rol === "medico") {
-            console.log("✅ Usuario es médico, cargando todos los pacientes...");
-            window.db.ref("Pacientes").on("value", actualizarListaPacientes);
-        } else {
-            console.log("✅ Usuario es paciente, cargando SOLO su información...");
-            window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
-        }
+        // 🔥 Escuchar cambios en la base de datos y actualizar la lista
+        window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
     } catch (error) {
         console.error("🔥 Error al cargar pacientes:", error);
     }
