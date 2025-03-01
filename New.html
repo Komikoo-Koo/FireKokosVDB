@@ -150,13 +150,13 @@ async function cargarConfigFirebase() {
 
             console.log("🔥 Firebase inicializado correctamente.");
 
-            // 🔥 Asegurar que Firebase está listo antes de llamar a cargarPacientes
+            // 🔥 Asegurar que Firebase detecte la sesión antes de llamar a cargarPacientes
             window.auth.onAuthStateChanged((user) => {
                 if (user) {
                     console.log("✅ Sesión activa:", user.email);
-                    cargarPacientes(user.uid); // 🔥 Pasamos la UID al cargar pacientes
+                    cargarPacientes(user.uid); // 🔥 PASAMOS la UID del usuario
                 } else {
-                    console.log("❌ No hay sesión iniciada.");
+                    console.log("❌ No hay usuario autenticado.");
                 }
             });
 
@@ -168,8 +168,6 @@ async function cargarConfigFirebase() {
     }
 }
 
-// 🔥 Llamamos a `cargarConfigFirebase()` para inicializar Firebase
-cargarConfigFirebase();
 
 
     </script>
