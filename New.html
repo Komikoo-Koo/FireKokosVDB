@@ -137,39 +137,40 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
 
     <script>
-        async function cargarConfigFirebase() {
-            try {
-                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
-                const script = await response.text();
-                eval(script); // 🔥 Carga la configuración de Firebase
+     async function cargarConfigFirebase() {
+    try {
+        const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
+        const script = await response.text();
+        eval(script); // 🔥 Carga la configuración de Firebase
 
-                if (typeof firebaseConfig !== "undefined") {
-                    firebase.initializeApp(firebaseConfig);
-                    window.auth = firebase.auth();
-                    window.db = firebase.database();
+        if (typeof firebaseConfig !== "undefined") {
+            firebase.initializeApp(firebaseConfig);
+            window.auth = firebase.auth();
+            window.db = firebase.database();
 
-                    console.log("🔥 Firebase inicializado correctamente.");
+            console.log("🔥 Firebase inicializado correctamente.");
 
-                    // 🔥 Verificar si la sesión está iniciada
-                    window.auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            console.log("✅ Sesión activa:", user.email);
-                            cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
-                        } else {
-                            console.log("❌ No hay sesión iniciada.");
-                            alert("Debes iniciar sesión para ver los pacientes.");
-                        }
-                    });
-
+            // 🔥 Verificar si la sesión está iniciada antes de llamar a `cargarPacientes()`
+            window.auth.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log("✅ Sesión activa:", user.email);
+                    cargarPacientes(); // 🔥 Ahora sí cargamos los pacientes
                 } else {
-                    console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
+                    console.log("❌ No hay sesión iniciada.");
                 }
-            } catch (error) {
-                console.error("🔥 Error al cargar Firebase Config:", error);
-            }
-        }
+            });
 
-        cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
+        } else {
+            console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
+        }
+    } catch (error) {
+        console.error("🔥 Error al cargar Firebase Config:", error);
+    }
+}
+
+// 🔥 Llamamos a `cargarConfigFirebase()` para inicializar Firebase
+cargarConfigFirebase();
+
     </script>
 
     <script>
