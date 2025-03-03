@@ -14,12 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
             display: flex;
@@ -28,16 +23,7 @@
             height: 100vh;
             background: url('https://source.unsplash.com/1600x900/?nature,mountains') no-repeat center center/cover;
         }
-
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-        }
-
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); }
         .container {
             position: relative;
             display: flex;
@@ -48,24 +34,8 @@
             color: white;
             z-index: 2;
         }
-
-        .welcome-text {
-            flex: 1;
-            padding: 20px;
-            max-width: 500px;
-        }
-
-        .welcome-text h1 {
-            font-size: 50px;
-            font-weight: bold;
-        }
-
-        .welcome-text p {
-            font-size: 16px;
-            margin-top: 10px;
-            line-height: 1.6;
-        }
-
+        .welcome-text { flex: 1; padding: 20px; max-width: 500px; }
+        .welcome-text h1 { font-size: 50px; font-weight: bold; }
         .form-container {
             background: rgba(255, 255, 255, 0.1);
             padding: 30px;
@@ -74,63 +44,18 @@
             flex-direction: column;
             width: 350px;
         }
-
-        .form-container h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            text-align: center;
-        }
-
-        .form-container input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .form-container input::placeholder {
-            color: #888;
-        }
-
+        .form-container h2 { margin-bottom: 20px; font-size: 24px; text-align: center; }
+        .form-container input { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 5px; font-size: 16px; }
         .form-container button {
-            background-color: #ff9800;
-            color: white;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
+            background-color: #ff9800; color: white; padding: 10px; border: none; cursor: pointer;
+            width: 100%; margin-top: 10px; border-radius: 5px; font-size: 16px; font-weight: bold;
         }
-
-        .form-container button:hover {
-            background-color: #e68900;
-        }
-
+        .form-container button:hover { background-color: #e68900; }
         .toggle-btn {
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            color: white;
-            cursor: pointer;
-            text-decoration: underline;
-            margin-bottom: 10px;
+            background: transparent; border: none; font-size: 16px; color: white; cursor: pointer;
+            text-decoration: underline; margin-bottom: 10px;
         }
-
-        .error-message {
-            color: red;
-            font-size: 14px;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .hidden {
-            display: none;
-        }
+        .error-message { color: red; font-size: 14px; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -165,10 +90,11 @@
                     window.db = firebase.database();
                     console.log("🔥 Firebase inicializado correctamente.");
 
+                    // 🔥 Redirigir si hay una sesión activa
                     window.auth.onAuthStateChanged((user) => {
                         if (user) {
                             console.log("✅ Sesión activa:", user.email);
-                            alert(`Bienvenido de nuevo, ${user.email}`);
+                            window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html"; // 🔥 Redirige al usuario
                         }
                     });
 
@@ -220,6 +146,7 @@
                     const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
                     console.log("✅ Usuario autenticado:", userCredential.user.email);
                     alert("Inicio de sesión exitoso.");
+                    window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html"; // 🔥 Redirige tras iniciar sesión
                 } else {
                     // 🔥 Registrar nuevo usuario
                     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
