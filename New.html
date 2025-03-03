@@ -131,18 +131,21 @@
 </head>
 <body>
     <div class="fixed-header">
-        <h1>Lista de Pacientes</h1>
-        <button id="toggle-mode">🌙 Modo Oscuro</button>
-        <div class="buscador">
-            <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
-            <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
+    <h1>Lista de Pacientes</h1>
+
     <div class="usuario-info">
         <span id="usuario-email">Cargando...</span>
         <button id="cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
-    <div id="lista-pacientes-container">
-        <div id="lista-pacientes"></div>
+
+    <button id="toggle-mode">🌙 Modo Oscuro</button>
+    
+    <div class="buscador">
+        <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
+        <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
     </div>
+</div>
+
 
     <!-- 🔥 Cargar Firebase (asegurar que esté antes del script que lo usa) -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
