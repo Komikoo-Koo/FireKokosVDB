@@ -125,36 +125,33 @@
             color: white;
             text-align: center;
             margin: 0;
-            height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
-            align-items: center;
-        }
-        .title {
-            flex: 1;
-            text-align: center;
+            height: 100vh;
         }
         h1 {
-            font-size: 60px;
+            font-size: 70px;
             font-weight: bold;
-            margin: 0;
+            margin: 50px 0;
             text-transform: uppercase;
             letter-spacing: 3px;
         }
-        .sidebar {
-            width: 350px;
+        .footer-bar {
+            width: 100%;
             background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            height: 100vh;
+            padding: 20px 0;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-around;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
         }
         .container {
-            width: 90%;
-            margin: 10px auto;
+            width: 30%;
             background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
         }
         input {
@@ -181,33 +178,31 @@
         }
         #status {
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="title">
-        <h1>Komikoos Vitals Data Base</h1>
-    </div>
+    <h1>Komikoos Vitals Data Base</h1>
 
-    <div class="sidebar">
-        <h2>Registro</h2>
+    <div class="footer-bar">
         <div class="container">
+            <h2>Registro</h2>
             <input type="text" id="nombre" placeholder="Nombre"><br>
             <input type="email" id="registroEmail" placeholder="Correo" autocomplete="email"><br>
             <input type="password" id="password" placeholder="Contraseña"><br>
             <button onclick="registrar()">Registrarse</button>
         </div>
 
-        <h2>Iniciar Sesión</h2>
         <div class="container">
+            <h2>Iniciar Sesión</h2>
             <input type="email" id="loginEmail" placeholder="Correo" autocomplete="email"><br>
             <input type="password" id="loginPassword" placeholder="Contraseña"><br>
             <button onclick="iniciarSesion()">Iniciar Sesión</button>
         </div>
 
-        <h2>Estado</h2>
         <div class="container">
+            <h2>Estado</h2>
             <p id="status">No has iniciado sesión.</p>
             <button onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
