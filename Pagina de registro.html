@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Komikoos Vitals Data Base</title>
 
+    <!-- Cargar fuentes de texto -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+
     <!-- Cargar Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
+    
 
     <script>
         async function cargarConfigFirebase() {
@@ -75,25 +79,30 @@
         }
 
         h1 {
-            font-size: 120px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-align: center;
-            margin: 0;
-        }
+    font-size: 12vw; /* Tamaño dinámico para que ocupe todo el ancho */
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+    margin: 0;
+    max-width: 95vw;
+    font-family: 'Poppins', sans-serif; /* Fuente profesional */
+}
 
-        .footer-bar {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-        }
+      .footer-bar {
+    width: 100%;
+    height: 66vh; /* 2/3 de la pantalla */
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    flex-direction: column; /* Hace que los elementos se acomoden en columna */
+}
+
 
         .container {
             width: 30%;
