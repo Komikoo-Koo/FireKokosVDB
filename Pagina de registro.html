@@ -151,26 +151,32 @@
           console.log("✅ Usuario autenticado:", userCredential.user.email);
           alert("Inicio de sesión exitoso.");
           window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
+
         } else {
           // ---------- Registrar nuevo usuario ----------
           const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
           console.log("✅ Usuario registrado:", userCredential.user.email);
 
-          // Guardar en la DB la información del usuario
+          // Obtener el UID
           const uid = userCredential.user.uid;
           // Rol automático (si el correo contiene "medico" => 'medico', si no => 'paciente')
           let rolAsignado = email.includes("medico") ? "medico" : "paciente";
 
-          // Creamos la referencia en "usuarios/uid"
+          // Registramos en la DB (usuarios/UID)
+          console.log("Intentando crear nodo en 'usuarios/' con UID:", uid, "y rol:", rolAsignado);
+
           await window.db.ref("usuarios/" + uid).set({
             email: email,
             rol: rolAsignado
           });
 
+          console.log("✅ Nodo creado en 'usuarios/" + uid + "' con rol:", rolAsignado);
+
           alert("Registro exitoso. Ahora inicia sesión.");
           // Regresar al formulario de login
           toggleAuth();
         }
+
       } catch (error) {
         console.error("🔥 Error:", error.message);
         errorMessage.textContent = "Error: " + error.message;
