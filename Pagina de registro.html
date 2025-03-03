@@ -1,164 +1,181 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Komikoos Vitals Data Base</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Komikoos Vitals Data Base</title>
 
-    <!-- Cargar fuentes de Google -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <!-- Cargar fuentes de Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 
-    <!-- Cargar Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
+  <!-- Cargar Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: url('https://source.unsplash.com/1600x900/?nature,mountains') no-repeat center center/cover;
-        }
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); }
-        .container {
-            position: relative;
-            display: flex;
-            width: 80%;
-            max-width: 1100px;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            z-index: 2;
-        }
-        .welcome-text { flex: 1; padding: 20px; max-width: 500px; }
-        .welcome-text h1 { font-size: 50px; font-weight: bold; }
-        .form-container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            width: 350px;
-        }
-        .form-container h2 { margin-bottom: 20px; font-size: 24px; text-align: center; }
-        .form-container input { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 5px; font-size: 16px; }
-        .form-container button {
-            background-color: #ff9800; color: white; padding: 10px; border: none; cursor: pointer;
-            width: 100%; margin-top: 10px; border-radius: 5px; font-size: 16px; font-weight: bold;
-        }
-        .form-container button:hover { background-color: #e68900; }
-        .toggle-btn {
-            background: transparent; border: none; font-size: 16px; color: white; cursor: pointer;
-            text-decoration: underline; margin-bottom: 10px;
-        }
-        .error-message { color: red; font-size: 14px; text-align: center; margin-top: 10px; }
-    </style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: url('https://source.unsplash.com/1600x900/?nature,mountains') no-repeat center center/cover;
+    }
+    .overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+    }
+    .container {
+      position: relative; display: flex; width: 80%; max-width: 1100px;
+      justify-content: space-between; align-items: center; color: white; z-index: 2;
+    }
+    .welcome-text {
+      flex: 1; padding: 20px; max-width: 500px;
+    }
+    .welcome-text h1 { font-size: 50px; font-weight: bold; }
+    .form-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px; border-radius: 10px;
+      display: flex; flex-direction: column; width: 350px;
+    }
+    .form-container h2 { margin-bottom: 20px; font-size: 24px; text-align: center; }
+    .form-container input {
+      width: 100%; padding: 10px; margin: 10px 0;
+      border: none; border-radius: 5px; font-size: 16px;
+    }
+    .form-container button {
+      background-color: #ff9800; color: white; padding: 10px; border: none;
+      cursor: pointer; width: 100%; margin-top: 10px; border-radius: 5px;
+      font-size: 16px; font-weight: bold;
+    }
+    .form-container button:hover { background-color: #e68900; }
+    .toggle-btn {
+      background: transparent; border: none; font-size: 16px; color: white; 
+      cursor: pointer; text-decoration: underline; margin-bottom: 10px;
+    }
+    .error-message {
+      color: red; font-size: 14px; text-align: center; margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="overlay"></div>
-    <div class="container">
-        <div class="welcome-text">
-            <h1>Welcome Back</h1>
-            <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.</p>
-        </div>
-
-        <div class="form-container" id="authForms">
-            <h2 id="formTitle">Sign in</h2>
-            <input type="email" id="email" placeholder="Email Address">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="authAction()">Sign in now</button>
-            <button class="toggle-btn" onclick="toggleAuth()">Create an account</button>
-            <p class="error-message" id="errorMessage"></p>
-        </div>
+  <div class="overlay"></div>
+  <div class="container">
+    <div class="welcome-text">
+      <h1>Welcome Back</h1>
+      <p>It is a long established fact that a reader will be distracted 
+      by the readable content of a page when looking at its layout.</p>
     </div>
 
-    <script>
-        // 🔥 Cargar configuración de Firebase desde un archivo externo
-        async function cargarConfigFirebase() {
-            try {
-                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
-                const script = await response.text();
-                eval(script);
+    <div class="form-container" id="authForms">
+      <h2 id="formTitle">Sign in</h2>
+      <input type="email" id="email" placeholder="Email Address">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="authAction()">Sign in now</button>
+      <button class="toggle-btn" onclick="toggleAuth()">Create an account</button>
+      <p class="error-message" id="errorMessage"></p>
+    </div>
+  </div>
 
-                if (typeof firebaseConfig !== "undefined") {
-                    firebase.initializeApp(firebaseConfig);
-                    window.auth = firebase.auth();
-                    window.db = firebase.database();
-                    console.log("🔥 Firebase inicializado correctamente.");
+  <script>
+    // -------------- Cargar configuración de Firebase --------------
+    async function cargarConfigFirebase() {
+      try {
+        const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
+        const script = await response.text();
+        eval(script);
 
-                    // 🔥 Redirigir si hay una sesión activa
-                    window.auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            console.log("✅ Sesión activa:", user.email);
-                            window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html"; // 🔥 Redirige al usuario
-                        }
-                    });
+        if (typeof firebaseConfig !== "undefined") {
+          firebase.initializeApp(firebaseConfig);
+          window.auth = firebase.auth();
+          window.db = firebase.database();
+          console.log("🔥 Firebase inicializado correctamente.");
 
-                } else {
-                    console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
-                }
-            } catch (error) {
-                console.error("🔥 Error al cargar Firebase Config:", error);
+          // Detectar si hay una sesión activa
+          window.auth.onAuthStateChanged((user) => {
+            if (user) {
+              console.log("✅ Sesión activa:", user.email);
+              // Redirige al usuario si ya está logueado
+              window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
             }
+          });
+        } else {
+          console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
         }
+      } catch (error) {
+        console.error("🔥 Error al cargar Firebase Config:", error);
+      }
+    }
+    cargarConfigFirebase();
 
-        cargarConfigFirebase();
+    // -------------- Lógica para alternar entre Sign in / Sign up --------------
+    let isSignIn = true; // Estado del formulario (true = login, false = registro)
 
-        let isSignIn = true; // Estado del formulario (true = login, false = registro)
+    function toggleAuth() {
+      const title = document.getElementById("formTitle");
+      const button = document.querySelector(".form-container button");
+      const toggleBtn = document.querySelector(".toggle-btn");
 
-        function toggleAuth() {
-            const title = document.getElementById("formTitle");
-            const button = document.querySelector(".form-container button");
-            const toggleBtn = document.querySelector(".toggle-btn");
+      isSignIn = !isSignIn;
 
-            isSignIn = !isSignIn;
+      if (isSignIn) {
+        title.textContent = "Sign in";
+        button.textContent = "Sign in now";
+        toggleBtn.textContent = "Create an account";
+      } else {
+        title.textContent = "Sign up";
+        button.textContent = "Register now";
+        toggleBtn.textContent = "Already have an account?";
+      }
+    }
 
-            if (isSignIn) {
-                title.textContent = "Sign in";
-                button.textContent = "Sign in now";
-                toggleBtn.textContent = "Create an account";
-            } else {
-                title.textContent = "Sign up";
-                button.textContent = "Register now";
-                toggleBtn.textContent = "Already have an account?";
-            }
+    // -------------- Acción de Autenticación (Sign in o Sign up) --------------
+    async function authAction() {
+      let email = document.getElementById("email").value.trim();
+      let password = document.getElementById("password").value.trim();
+      let errorMessage = document.getElementById("errorMessage");
+
+      errorMessage.textContent = ""; // Limpiar mensajes de error
+
+      if (email === "" || password === "") {
+        errorMessage.textContent = "Por favor, llena todos los campos.";
+        return;
+      }
+
+      try {
+        if (isSignIn) {
+          // ---------- Iniciar sesión ----------
+          const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+          console.log("✅ Usuario autenticado:", userCredential.user.email);
+          alert("Inicio de sesión exitoso.");
+          window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
+        } else {
+          // ---------- Registrar nuevo usuario ----------
+          const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+          console.log("✅ Usuario registrado:", userCredential.user.email);
+
+          // Guardar en la DB la información del usuario
+          const uid = userCredential.user.uid;
+          // Rol automático (si el correo contiene "medico" => 'medico', si no => 'paciente')
+          let rolAsignado = email.includes("medico") ? "medico" : "paciente";
+
+          // Creamos la referencia en "usuarios/uid"
+          await window.db.ref("usuarios/" + uid).set({
+            email: email,
+            rol: rolAsignado
+          });
+
+          alert("Registro exitoso. Ahora inicia sesión.");
+          // Regresar al formulario de login
+          toggleAuth();
         }
-
-        async function authAction() {
-            let email = document.getElementById("email").value.trim();
-            let password = document.getElementById("password").value.trim();
-            let errorMessage = document.getElementById("errorMessage");
-
-            errorMessage.textContent = ""; // Limpiar mensajes de error
-
-            if (email === "" || password === "") {
-                errorMessage.textContent = "Por favor, llena todos los campos.";
-                return;
-            }
-
-            try {
-                if (isSignIn) {
-                    // 🔥 Iniciar sesión
-                    const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
-                    console.log("✅ Usuario autenticado:", userCredential.user.email);
-                    alert("Inicio de sesión exitoso.");
-                    window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html"; // 🔥 Redirige tras iniciar sesión
-                } else {
-                    // 🔥 Registrar nuevo usuario
-                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
-                    console.log("✅ Usuario registrado:", userCredential.user.email);
-                    alert("Registro exitoso. Ahora inicia sesión.");
-                    toggleAuth(); // Volver al formulario de login
-                }
-            } catch (error) {
-                console.error("🔥 Error:", error.message);
-                errorMessage.textContent = "Error: " + error.message;
-            }
-        }
-    </script>
+      } catch (error) {
+        console.error("🔥 Error:", error.message);
+        errorMessage.textContent = "Error: " + error.message;
+      }
+    }
+  </script>
 </body>
 </html>
