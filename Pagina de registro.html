@@ -58,6 +58,13 @@
     .error-message {
       color: red; font-size: 14px; text-align: center; margin-top: 10px;
     }
+    /* Solo para destacar que se requiere pulsar el botón "Create an account" para que se registre */
+    #recordatorioRegistro {
+      color: yellow; 
+      font-weight: bold; 
+      text-align: center; 
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -70,6 +77,11 @@
     </div>
 
     <div class="form-container" id="authForms">
+      <!-- Mensaje de recordatorio de la lógica de "Create an account" -->
+      <div id="recordatorioRegistro">
+        Si quieres crear un usuario nuevo, haz clic en "Create an account" primero.
+      </div>
+
       <h2 id="formTitle">Sign in</h2>
       <input type="email" id="email" placeholder="Email Address">
       <input type="password" id="password" placeholder="Password">
@@ -93,14 +105,24 @@
           window.db = firebase.database();
           console.log("🔥 Firebase inicializado correctamente.");
 
-          // Detectar si hay una sesión activa
-          window.auth.onAuthStateChanged((user) => {
-            if (user) {
-              console.log("✅ Sesión activa:", user.email);
-              // Redirige al usuario si ya está logueado
-              window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
-            }
+          // ---------- IMPORTANTE: Forzar logout para pruebas -----------
+          // Si estás ya logueado, te saca de la sesión para que puedas
+          // registrar un usuario nuevo sin que se redirija automáticamente.
+          window.auth.signOut().then(() => {
+            console.log("Se ha cerrado sesión forzosamente para poder registrar un usuario nuevo.");
           });
+
+          // Antes lo tenías así (redirigir si había sesión):
+          // ---------------------------------------------------------
+          // window.auth.onAuthStateChanged((user) => {
+          //   if (user) {
+          //     console.log("✅ Sesión activa:", user.email);
+          //     window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
+          //   }
+          // });
+          // ---------------------------------------------------------
+          // Lo comentamos para que no te saque de la pantalla de registro.
+
         } else {
           console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
         }
@@ -110,23 +132,24 @@
     }
     cargarConfigFirebase();
 
+
     // -------------- Lógica para alternar entre Sign in / Sign up --------------
     let isSignIn = true; // Estado del formulario (true = login, false = registro)
 
     function toggleAuth() {
       const title = document.getElementById("formTitle");
-      const button = document.querySelector(".form-container button");
+      const mainButton = document.querySelector(".form-container button");
       const toggleBtn = document.querySelector(".toggle-btn");
 
       isSignIn = !isSignIn;
 
       if (isSignIn) {
         title.textContent = "Sign in";
-        button.textContent = "Sign in now";
+        mainButton.textContent = "Sign in now";
         toggleBtn.textContent = "Create an account";
       } else {
         title.textContent = "Sign up";
-        button.textContent = "Register now";
+        mainButton.textContent = "Register now";
         toggleBtn.textContent = "Already have an account?";
       }
     }
@@ -137,7 +160,8 @@
       let password = document.getElementById("password").value.trim();
       let errorMessage = document.getElementById("errorMessage");
 
-      errorMessage.textContent = ""; // Limpiar mensajes de error
+      // Limpiar mensajes de error previos
+      errorMessage.textContent = ""; 
 
       if (email === "" || password === "") {
         errorMessage.textContent = "Por favor, llena todos los campos.";
@@ -147,13 +171,17 @@
       try {
         if (isSignIn) {
           // ---------- Iniciar sesión ----------
+          console.log("Intentando iniciar sesión con:", email);
           const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
           console.log("✅ Usuario autenticado:", userCredential.user.email);
           alert("Inicio de sesión exitoso.");
+
+          // Redirigir al final, cuando ya se inició sesión
           window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
 
         } else {
           // ---------- Registrar nuevo usuario ----------
+          console.log("Intentando registrar nuevo usuario con:", email);
           const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
           console.log("✅ Usuario registrado:", userCredential.user.email);
 
@@ -162,8 +190,7 @@
           // Rol automático (si el correo contiene "medico" => 'medico', si no => 'paciente')
           let rolAsignado = email.includes("medico") ? "medico" : "paciente";
 
-          // Registramos en la DB (usuarios/UID)
-          console.log("Intentando crear nodo en 'usuarios/' con UID:", uid, "y rol:", rolAsignado);
+          console.log("-> Intentando crear nodo 'usuarios/"+uid+"' con rol:", rolAsignado);
 
           await window.db.ref("usuarios/" + uid).set({
             email: email,
@@ -178,7 +205,7 @@
         }
 
       } catch (error) {
-        console.error("🔥 Error:", error.message);
+        console.error("🔥 Error en authAction:", error.message);
         errorMessage.textContent = "Error: " + error.message;
       }
     }
