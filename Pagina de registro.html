@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
-    
 
     <script>
         async function cargarConfigFirebase() {
@@ -69,7 +68,7 @@
             align-items: center;
             height: 100vh;
         }
-        
+
         .title-container {
             flex-grow: 1;
             display: flex;
@@ -79,31 +78,29 @@
         }
 
         h1 {
-    font-size: 12vw; /* Tamaño dinámico para que ocupe todo el ancho */
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    text-align: center;
-    margin: 0;
-    max-width: 95vw;
-    font-family: 'Poppins', sans-serif; /* Fuente profesional */
-}
+            font-size: 12vw; /* Tamaño dinámico para que ocupe casi todo el ancho */
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-align: center;
+            margin: 0;
+            max-width: 95vw;
+            font-family: 'Poppins', sans-serif; /* Fuente profesional */
+        }
 
-     .footer-bar {
-    width: 100%;
-    height: 66vh; /* 2/3 de la pantalla */
-    background: rgba(0, 0, 0, 0.8);
-    padding: 20px 0;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    flex-direction: row; /* 🔥 Acomoda los elementos en fila */
-}
-
-
+        .footer-bar {
+            width: 100%;
+            height: 66vh; /* 2/3 de la pantalla */
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start; /* 🔥 Asegura que los desplegables estén en la parte superior */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            flex-direction: row; /* 🔥 Acomoda los elementos en fila */
+        }
 
         .container {
             width: 30%;
@@ -111,12 +108,29 @@
             padding: 10px;
             border-radius: 10px;
             overflow: hidden;
+            position: relative; /* Permite que los desplegables expandan dentro del contenedor */
+        }
+
+        .toggle-btn {
+            background-color: #333;
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 5px; /* 🔥 Espacio entre el botón y la parte superior */
+        }
+
+        .toggle-btn:hover {
+            background-color: #444;
         }
 
         .expandable {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.5s ease-out;
+            margin-top: 5px; /* 🔥 Pequeño margen para que el contenido no se vea pegado */
         }
 
         input {
@@ -142,15 +156,6 @@
 
         button:hover {
             background-color: #e68900;
-        }
-
-        .toggle-btn {
-            background-color: #333;
-            margin-bottom: 10px;
-        }
-
-        .toggle-btn:hover {
-            background-color: #444;
         }
     </style>
 </head>
