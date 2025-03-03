@@ -51,67 +51,6 @@
                 section.style.maxHeight = section.scrollHeight + "px";
             }
         }
-
-        async function registrar() {
-            let nombre = document.getElementById("nombre").value.trim();
-            let email = document.getElementById("registroEmail").value.trim();
-            let password = document.getElementById("password").value.trim();
-
-            if (nombre === "" || email === "" || password === "") {
-                alert("Por favor, llena todos los campos.");
-                return;
-            }
-
-            try {
-                const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
-                const uid = userCredential.user.uid;
-                console.log("🔥 UID del usuario autenticado:", uid);
-
-                let rolAsignado = email.includes("medico") ? "medico" : "paciente";
-
-                await window.db.ref("usuarios/" + uid).set({
-                    nombre: nombre,
-                    email: email,
-                    rol: rolAsignado
-                });
-
-                alert(`Usuario registrado correctamente con rol: ${rolAsignado}`);
-            } catch (error) {
-                console.error("🔥 Error al registrar:", error);
-                alert("Error al registrar usuario: " + error.message);
-            }
-        }
-
-        async function iniciarSesion() {
-            let email = document.getElementById("loginEmail").value.trim();
-            let password = document.getElementById("loginPassword").value.trim();
-
-            if (email === "" || password === "") {
-                alert("Por favor, llena todos los campos.");
-                return;
-            }
-
-            try {
-                const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
-                console.log("✅ Usuario autenticado:", userCredential.user.email);
-                alert("Inicio de sesión exitoso.");
-                document.getElementById("status").textContent = `Bienvenido, ${userCredential.user.email}`;
-            } catch (error) {
-                console.error("🔥 Error al iniciar sesión:", error);
-                alert("Error al iniciar sesión: " + error.message);
-            }
-        }
-
-        async function cerrarSesion() {
-            try {
-                await window.auth.signOut();
-                console.log("✅ Sesión cerrada.");
-                alert("Sesión cerrada correctamente.");
-                document.getElementById("status").textContent = "No has iniciado sesión.";
-            } catch (error) {
-                console.error("🔥 Error al cerrar sesión:", error);
-            }
-        }
     </script>
 
     <style>
@@ -119,23 +58,31 @@
             font-family: Arial, sans-serif;
             background: linear-gradient(to bottom, #a50000, #000000);
             color: white;
-            text-align: center;
             margin: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             height: 100vh;
         }
+        
+        .title-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
         h1 {
             font-size: 70px;
             font-weight: bold;
-            margin: 50px 0;
             text-transform: uppercase;
             letter-spacing: 3px;
             text-align: center;
-            width: 100%;
+            margin: 0;
         }
+
         .footer-bar {
             width: 100%;
             background: rgba(0, 0, 0, 0.8);
@@ -147,6 +94,7 @@
             bottom: 0;
             left: 0;
         }
+
         .container {
             width: 30%;
             background: rgba(255, 255, 255, 0.2);
@@ -154,11 +102,13 @@
             border-radius: 10px;
             overflow: hidden;
         }
+
         .expandable {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.5s ease-out;
         }
+
         input {
             width: 90%;
             padding: 10px;
@@ -166,6 +116,7 @@
             border: none;
             border-radius: 5px;
         }
+
         button {
             background-color: #ff9800;
             color: white;
@@ -178,20 +129,25 @@
             font-size: 16px;
             font-weight: bold;
         }
+
         button:hover {
             background-color: #e68900;
         }
+
         .toggle-btn {
             background-color: #333;
             margin-bottom: 10px;
         }
+
         .toggle-btn:hover {
             background-color: #444;
         }
     </style>
 </head>
 <body>
-    <h1>Komikoos Vitals Data Base</h1>
+    <div class="title-container">
+        <h1>Komikoos Vitals Data Base</h1>
+    </div>
 
     <div class="footer-bar">
         <div class="container">
