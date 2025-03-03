@@ -23,12 +23,20 @@
     right: 20px;
     display: flex;
     align-items: center;
+    justify-content: flex-end; /* 🔥 Mantiene el botón en su lugar */
     gap: 10px;
+    max-width: 60%; /* 🔥 Evita que el correo ocupe todo el ancho */
+    overflow: hidden;
 }
 
 #usuario-email {
     font-weight: bold;
+    white-space: nowrap; /* 🔥 Evita saltos de línea */
+    overflow: hidden;
+    text-overflow: ellipsis; /* 🔥 Muestra "..." si el correo es muy largo */
+    max-width: 100%;
 }
+
         
         body.dark-mode {
             --bg-color: #181818;
@@ -137,11 +145,6 @@
             <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
             <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
         </div>
-        <button onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-<div class="fixed-header">
-    <h1>Lista de Pacientes</h1>
-
     <div class="usuario-info">
         <span id="usuario-email">Cargando...</span>
         <button id="cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
@@ -149,10 +152,6 @@
 
     <button id="toggle-mode">🌙 Modo Oscuro</button>
     
-    <div class="buscador">
-        <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
-        <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
-    </div>
 </div>
 
     <div id="lista-pacientes-container">
