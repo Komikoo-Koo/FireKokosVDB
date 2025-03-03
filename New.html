@@ -149,17 +149,18 @@
                     window.db = firebase.database();
 
                     console.log("🔥 Firebase inicializado correctamente.");
-
+                    
                     // 🔥 Verificar si la sesión está iniciada
                     window.auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            console.log("✅ Sesión activa:", user.email);
-                            cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
-                        } else {
-                            console.log("❌ No hay sesión iniciada.");
-                            alert("Debes iniciar sesión para ver los pacientes.");
-                        }
-                    });
+                      if (user) {
+                          console.log("✅ Sesión activa:", user.email);
+                          cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
+                          } else {
+                          console.log("❌ No hay sesión iniciada.");
+                       window.location.href = "Pagina%20de%20registro.html";
+                       }
+                       });
+
 
                 } else {
                     console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
