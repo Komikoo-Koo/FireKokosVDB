@@ -16,7 +16,20 @@
             --fecha-bg: #f9a825;
             --fecha-border: #f9a825;
         }
+        
+.usuario-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+#usuario-email {
+    font-weight: bold;
+}
+        
         body.dark-mode {
             --bg-color: #181818;
             --text-color: #ffffff;
@@ -126,6 +139,21 @@
         </div>
         <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
+<div class="fixed-header">
+    <h1>Lista de Pacientes</h1>
+
+    <div class="usuario-info">
+        <span id="usuario-email">Cargando...</span>
+        <button id="cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+
+    <button id="toggle-mode">🌙 Modo Oscuro</button>
+    
+    <div class="buscador">
+        <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
+        <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
+    </div>
+</div>
 
     <div id="lista-pacientes-container">
         <div id="lista-pacientes"></div>
@@ -152,14 +180,16 @@
                     
                     // 🔥 Verificar si la sesión está iniciada
                     window.auth.onAuthStateChanged((user) => {
-                      if (user) {
-                          console.log("✅ Sesión activa:", user.email);
-                          cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
-                          } else {
-                          console.log("❌ No hay sesión iniciada.");
-                       window.location.href = "Pagina%20de%20registro.html";
-                       }
-                       });
+    if (user) {
+        document.getElementById("usuario-email").textContent = user.email;
+        console.log("✅ Sesión activa:", user.email);
+        cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
+    } else {
+        console.log("❌ No hay sesión iniciada.");
+        window.location.href = "Pagina%20de%20registro.html";
+    }
+});
+
 
 
                 } else {
