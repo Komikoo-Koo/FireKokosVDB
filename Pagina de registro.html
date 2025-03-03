@@ -71,9 +71,13 @@
   <div class="overlay"></div>
   <div class="container">
     <div class="welcome-text">
-      <h1>Welcome Back</h1>
-      <p>It is a long established fact that a reader will be distracted 
-      by the readable content of a page when looking at its layout.</p>
+      <h1>Komikoo's VDB</h1>
+      <p>Komikoo's Vitals Data Base es una base de datos que se encuentra en Firebase
+        hospedada en GitHub como proyecto universitario de la Universidad Tecnologica
+        de Nogales. El artefacto mide los vitales mediante un maletin con todos los
+        sensores necesarios enviandolos a una aplicacion en QT y esta ultima publicando
+        los datos a la base de datos, esta pagina envia las claves de acceso y accede
+        a los datos proporcionados por la base en relacion a su rol en esta.</p>
     </div>
 
     <div class="form-container" id="authForms">
@@ -139,12 +143,12 @@
       isSignIn = !isSignIn;
 
       if (isSignIn) {
-        title.textContent = "Ingresar";
-        mainButton.textContent = "Ingresar a cuenta";
+        title.textContent = "Iniciar sesión";
+        mainButton.textContent = "Iniciar";
         toggleBtn.textContent = "Crear cuenta";
       } else {
-        title.textContent = "Registrarse";
-        mainButton.textContent = "Registrar";
+        title.textContent = "Registro";
+        mainButton.textContent = "Crear";
         toggleBtn.textContent = "¿Ya tienes cuenta?";
       }
     }
