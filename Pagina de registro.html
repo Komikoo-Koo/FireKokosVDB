@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro e Inicio de Sesión</title>
+    <title>Komikoos Vitals Data Base</title>
 
     <!-- Cargar Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
@@ -16,18 +16,14 @@
             try {
                 const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
                 const script = await response.text();
-                eval(script); // 🔥 Carga la configuración de Firebase
+                eval(script);
 
                 if (typeof firebaseConfig !== "undefined") {
                     firebase.initializeApp(firebaseConfig);
-
-                    // 🔥 Definir auth y db después de inicializar Firebase
                     window.auth = firebase.auth();
                     window.db = firebase.database();
-
                     console.log("🔥 Firebase inicializado correctamente.");
 
-                    // 🔥 Verificar si la sesión está iniciada al cargar la página
                     window.auth.onAuthStateChanged((user) => {
                         if (user) {
                             console.log("✅ Sesión activa:", user.email);
@@ -46,14 +42,13 @@
             }
         }
 
-        cargarConfigFirebase(); // 🔥 Cargar configuración antes de ejecutar cualquier función
+        cargarConfigFirebase();
     </script>
 
     <script>
-        // 🔥 Función para registrar usuario
         async function registrar() {
             let nombre = document.getElementById("nombre").value.trim();
-            let email = document.getElementById("email").value.trim();
+            let email = document.getElementById("registroEmail").value.trim();
             let password = document.getElementById("password").value.trim();
 
             if (nombre === "" || email === "" || password === "") {
@@ -86,7 +81,6 @@
             }
         }
 
-        // 🔥 Función para iniciar sesión
         async function iniciarSesion() {
             let email = document.getElementById("loginEmail").value.trim();
             let password = document.getElementById("loginPassword").value.trim();
@@ -105,7 +99,6 @@
                 const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
                 console.log("✅ Usuario autenticado:", userCredential.user.email);
                 alert("Inicio de sesión exitoso.");
-
                 document.getElementById("status").textContent = `Bienvenido, ${userCredential.user.email}`;
             } catch (error) {
                 console.error("🔥 Error al iniciar sesión:", error);
@@ -113,7 +106,6 @@
             }
         }
 
-        // 🔥 Función para cerrar sesión
         async function cerrarSesion() {
             try {
                 await window.auth.signOut();
@@ -129,13 +121,17 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #8360c3, #2ebf91);
+            background-color: #6a0d0d; /* Rojo oscuro */
             color: white;
             text-align: center;
             padding: 20px;
         }
-        h2 {
-            margin-bottom: 10px;
+        h1 {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         .container {
             max-width: 400px;
@@ -160,6 +156,8 @@
             width: 100%;
             margin-top: 10px;
             border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
         }
         button:hover {
             background-color: #e68900;
@@ -171,21 +169,22 @@
     </style>
 </head>
 <body>
+    <h1>Komikoos Vitals Data Base</h1>
+
     <h2>Registro de Usuarios</h2>
     <div class="container">
         <input type="text" id="nombre" placeholder="Nombre"><br>
-        <input type="email" id="email" placeholder="Correo"><br>
+        <input type="email" id="registroEmail" placeholder="Correo" autocomplete="email"><br>
         <input type="password" id="password" placeholder="Contraseña"><br>
         <button onclick="registrar()">Registrarse</button>
     </div>
 
- <h2>Iniciar Sesión</h2>
-<div class="container">
-    <input type="email" id="loginemail" placeholder="Correo"><br>
-    <input type="password" id="loginPassword" placeholder="Contraseña"><br>
-    <button onclick="iniciarSesion()">Iniciar Sesión</button>
-</div>
-
+    <h2>Iniciar Sesión</h2>
+    <div class="container">
+        <input type="email" id="loginEmail" placeholder="Correo" autocomplete="email"><br>
+        <input type="password" id="loginPassword" placeholder="Contraseña"><br>
+        <button onclick="iniciarSesion()">Iniciar Sesión</button>
+    </div>
 
     <h2>Estado</h2>
     <div class="container">
