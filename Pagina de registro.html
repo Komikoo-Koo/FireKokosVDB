@@ -58,7 +58,6 @@
     .error-message {
       color: red; font-size: 14px; text-align: center; margin-top: 10px;
     }
-    /* Solo para destacar que se requiere pulsar el botón "Create an account" para que se registre */
     #recordatorioRegistro {
       color: yellow; 
       font-weight: bold; 
@@ -105,23 +104,19 @@
           window.db = firebase.database();
           console.log("🔥 Firebase inicializado correctamente.");
 
-          // ---------- IMPORTANTE: Forzar logout para pruebas -----------
-          // Si estás ya logueado, te saca de la sesión para que puedas
-          // registrar un usuario nuevo sin que se redirija automáticamente.
-          window.auth.signOut().then(() => {
-            console.log("Se ha cerrado sesión forzosamente para poder registrar un usuario nuevo.");
-          });
-
-          // Antes lo tenías así (redirigir si había sesión):
-          // ---------------------------------------------------------
+          // ---- COMENTAR o QUITAR la redirección inmediata en onAuthStateChanged ----
           // window.auth.onAuthStateChanged((user) => {
           //   if (user) {
           //     console.log("✅ Sesión activa:", user.email);
-          //     window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
+          //     // Redirigir de inmediato (COMENTADO para que no interrumpa el registro)
+          //     // window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
           //   }
           // });
-          // ---------------------------------------------------------
-          // Lo comentamos para que no te saque de la pantalla de registro.
+
+          // ---- OPCIONAL: forzar logout al cargar la página (solo para pruebas) ----
+          // window.auth.signOut().then(() => {
+          //   console.log("Se ha cerrado sesión forzosamente para probar registro.");
+          // });
 
         } else {
           console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
@@ -131,7 +126,6 @@
       }
     }
     cargarConfigFirebase();
-
 
     // -------------- Lógica para alternar entre Sign in / Sign up --------------
     let isSignIn = true; // Estado del formulario (true = login, false = registro)
@@ -176,8 +170,8 @@
           console.log("✅ Usuario autenticado:", userCredential.user.email);
           alert("Inicio de sesión exitoso.");
 
-          // Redirigir al final, cuando ya se inició sesión
-         // window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
+          // Redirigir manualmente aquí, después del login exitoso
+          window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
 
         } else {
           // ---------- Registrar nuevo usuario ----------
@@ -199,9 +193,9 @@
 
           console.log("✅ Nodo creado en 'usuarios/" + uid + "' con rol:", rolAsignado);
 
-          alert("Registro exitoso. Ahora inicia sesión.");
-          // Regresar al formulario de login
-          toggleAuth();
+          alert("Registro exitoso. Redirigiendo...");
+          // Ahora sí redirigimos DESPUÉS de crear el nodo
+          window.location.href = "https://komikoo-koo.github.io/FireKokosVDB/New.html";
         }
 
       } catch (error) {
