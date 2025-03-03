@@ -5,143 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Komikoos Vitals Data Base</title>
 
-    <!-- Cargar fuentes de texto -->
+    <!-- Cargar fuentes de Google -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 
-    <!-- Cargar Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database-compat.js"></script>
-
-    <script>
-        async function cargarConfigFirebase() {
-            try {
-                const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
-                const script = await response.text();
-                eval(script);
-
-                if (typeof firebaseConfig !== "undefined") {
-                    firebase.initializeApp(firebaseConfig);
-                    window.auth = firebase.auth();
-                    window.db = firebase.database();
-                    console.log("🔥 Firebase inicializado correctamente.");
-
-                    window.auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            console.log("✅ Sesión activa:", user.email);
-                            document.getElementById("status").textContent = `Bienvenido, ${user.email}`;
-                        } else {
-                            console.log("❌ No hay sesión iniciada.");
-                            document.getElementById("status").textContent = "No has iniciado sesión.";
-                        }
-                    });
-
-                } else {
-                    console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
-                }
-            } catch (error) {
-                console.error("🔥 Error al cargar Firebase Config:", error);
-            }
-        }
-
-        cargarConfigFirebase();
-        
-        function toggleSection(sectionId) {
-            let section = document.getElementById(sectionId);
-            if (section.style.maxHeight) {
-                section.style.maxHeight = null;
-            } else {
-                section.style.maxHeight = section.scrollHeight + "px";
-            }
-        }
-    </script>
-
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #a50000, #000000);
-            color: white;
+        * {
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .title-container {
-            flex-grow: 1;
+        body {
+            font-family: 'Poppins', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
+            height: 100vh;
+            background: url('https://source.unsplash.com/1600x900/?nature,mountains') no-repeat center center/cover;
         }
 
-        h1 {
-            font-size: 12vw; /* Tamaño dinámico para que ocupe casi todo el ancho */
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-align: center;
-            margin: 0;
-            max-width: 95vw;
-            font-family: 'Poppins', sans-serif; /* Fuente profesional */
-        }
-
-        .footer-bar {
-            width: 100%;
-            height: 66vh; /* 2/3 de la pantalla */
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start; /* 🔥 Asegura que los desplegables estén en la parte superior */
-            position: fixed;
-            bottom: 0;
+        .overlay {
+            position: absolute;
+            top: 0;
             left: 0;
-            flex-direction: row; /* 🔥 Acomoda los elementos en fila */
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Oscurece la imagen para mejorar legibilidad */
         }
 
         .container {
-            width: 30%;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative; /* Permite que los desplegables expandan dentro del contenedor */
+            position: relative;
+            display: flex;
+            width: 80%;
+            max-width: 1100px;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            z-index: 2;
         }
 
-        .toggle-btn {
-            background-color: #333;
-            width: 100%;
-            padding: 10px;
-            font-size: 18px;
+        .welcome-text {
+            flex: 1;
+            padding: 20px;
+            max-width: 500px;
+        }
+
+        .welcome-text h1 {
+            font-size: 50px;
             font-weight: bold;
-            border: none;
-            cursor: pointer;
-            margin-bottom: 5px; /* 🔥 Espacio entre el botón y la parte superior */
         }
 
-        .toggle-btn:hover {
-            background-color: #444;
+        .welcome-text p {
+            font-size: 16px;
+            margin-top: 10px;
+            line-height: 1.6;
         }
 
-        .expandable {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-out;
-            margin-top: 5px; /* 🔥 Pequeño margen para que el contenido no se vea pegado */
+        .login-form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            width: 350px;
         }
 
-        input {
-            width: 90%;
+        .login-form h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .login-form input {
+            width: 100%;
             padding: 10px;
             margin: 10px 0;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
         }
 
-        button {
+        .login-form input::placeholder {
+            color: #888;
+        }
+
+        .login-form button {
             background-color: #ff9800;
             color: white;
             padding: 10px;
@@ -154,40 +102,50 @@
             font-weight: bold;
         }
 
-        button:hover {
+        .login-form button:hover {
             background-color: #e68900;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .remember-me input {
+            margin-right: 5px;
+        }
+
+        .forgot-password {
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .forgot-password a {
+            color: white;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="title-container">
-        <h1>Komikoos Vitals Data Base</h1>
-    </div>
-
-    <div class="footer-bar">
-        <div class="container">
-            <button class="toggle-btn" onclick="toggleSection('registroSection')">Registro</button>
-            <div id="registroSection" class="expandable">
-                <input type="text" id="nombre" placeholder="Nombre"><br>
-                <input type="email" id="registroEmail" placeholder="Correo" autocomplete="email"><br>
-                <input type="password" id="password" placeholder="Contraseña"><br>
-                <button onclick="registrar()">Registrarse</button>
-            </div>
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="welcome-text">
+            <h1>Welcome Back</h1>
+            <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.</p>
         </div>
 
-        <div class="container">
-            <button class="toggle-btn" onclick="toggleSection('loginSection')">Iniciar Sesión</button>
-            <div id="loginSection" class="expandable">
-                <input type="email" id="loginEmail" placeholder="Correo" autocomplete="email"><br>
-                <input type="password" id="loginPassword" placeholder="Contraseña"><br>
-                <button onclick="iniciarSesion()">Iniciar Sesión</button>
+        <div class="login-form">
+            <h2>Sign in</h2>
+            <input type="email" placeholder="Email Address">
+            <input type="password" placeholder="Password">
+            <div class="remember-me">
+                <input type="checkbox" id="remember">
+                <label for="remember">Remember Me</label>
             </div>
-        </div>
-
-        <div class="container">
-            <h2>Estado</h2>
-            <p id="status">No has iniciado sesión.</p>
-            <button onclick="cerrarSesion()">Cerrar Sesión</button>
+            <button>Sign in now</button>
+            <p class="forgot-password"><a href="#">Lost your password?</a></p>
         </div>
     </div>
 </body>
