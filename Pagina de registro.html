@@ -12,6 +12,8 @@
 
     <!-- 🔥 Cargar configuración desde GitHub -->
     <script>
+        let firebaseListo = false; // 🔥 Variable para verificar si Firebase ya se inicializó
+
         async function cargarConfigFirebase() {
             try {
                 const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/main/firebase-config.json");
@@ -20,6 +22,7 @@
 
                 window.auth = firebase.auth();
                 window.db = firebase.database();
+                firebaseListo = true; // 🔥 Indicar que Firebase está listo
 
                 console.log("🔥 Firebase inicializado correctamente.");
 
@@ -43,19 +46,23 @@
     </script>
 
     <script>
+        // 🔥 Función para esperar a que Firebase esté listo
+        async function esperarFirebase() {
+            while (!firebaseListo) {
+                await new Promise(resolve => setTimeout(resolve, 500)); // Esperar 500ms
+            }
+        }
+
         // 🔥 Función para registrar usuario
         async function registrar() {
+            await esperarFirebase(); // 🔥 Espera a que Firebase esté listo
+
             let nombre = document.getElementById("nombre").value.trim();
             let email = document.getElementById("email").value.trim();
             let password = document.getElementById("password").value.trim();
 
             if (nombre === "" || email === "" || password === "") {
                 alert("Por favor, llena todos los campos.");
-                return;
-            }
-
-            if (!window.auth || !window.db) {
-                alert("Error: Firebase no está inicializado todavía.");
                 return;
             }
 
@@ -81,16 +88,13 @@
 
         // 🔥 Función para iniciar sesión
         async function iniciarSesion() {
+            await esperarFirebase(); // 🔥 Espera a que Firebase esté listo
+
             let email = document.getElementById("loginEmail").value.trim();
             let password = document.getElementById("loginPassword").value.trim();
 
             if (email === "" || password === "") {
                 alert("Por favor, llena todos los campos.");
-                return;
-            }
-
-            if (!window.auth) {
-                alert("Error: Firebase no está inicializado todavía.");
                 return;
             }
 
@@ -108,6 +112,8 @@
 
         // 🔥 Función para cerrar sesión
         async function cerrarSesion() {
+            await esperarFirebase(); // 🔥 Espera a que Firebase esté listo
+
             try {
                 await window.auth.signOut();
                 console.log("✅ Sesión cerrada.");
