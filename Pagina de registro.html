@@ -36,6 +36,12 @@
     }
 
     .welcome-text h1 { font-size: 90px; font-weight: bold; }
+
+    .welcome-text p {
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 600px;
+    }
     
     .form-container {
       background: rgba(255, 255, 255, 0.1);
@@ -65,7 +71,7 @@
 
     /* 🔥 Estilo para el modal */
     .modal {
-      display: none; /* 🔹 Se oculta por defecto */
+      display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
@@ -117,6 +123,12 @@
   <div class="container">
     <div class="welcome-text">
       <h1>Komikoo's VDB</h1>
+      <p>Komikoo's Vitals Data Base es una base de datos que se encuentra en Firebase
+        hospedada en GitHub como proyecto universitario de la Universidad Tecnológica
+        de Nogales. El artefacto mide los vitales mediante un maletín con todos los
+        sensores necesarios enviándolos a una aplicación en QT, la cual publica los
+        datos en la base de datos. Esta página gestiona las claves de acceso y
+        permite visualizar los datos según el rol del usuario.</p>
     </div>
 
     <div class="form-container" id="authForms">
@@ -158,10 +170,11 @@
     }
     cargarConfigFirebase();
 
+    let isSignIn = true;
     function toggleAuth() {
       const title = document.getElementById("formTitle");
       isSignIn = !isSignIn;
-      title.textContent = isSignIn ? "Iniciar sesión" : "Registro";
+      title.textContent = isSignIn ? "Ingresar" : "Registro";
     }
 
     async function authAction() {
