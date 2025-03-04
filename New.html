@@ -285,51 +285,21 @@
 
 function actualizarListaPacientes(snapshot) {
     const datosFirebase = snapshot.val() || {};
-    console.log("🔥 Datos cargados correctamente:", datosFirebase);
+    console.log("🔥 Datos actualizados:", datosFirebase);
 
     const listaPacientes = document.getElementById("lista-pacientes");
     listaPacientes.innerHTML = "";
 
-    // 🔥 Verificar el usuario autenticado y esperar a que Firebase cargue completamente
-    window.auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            console.warn("❌ No hay usuario autenticado.");
-            return;
-        }
+    // 🔥 Ahora recorremos primero el ID del paciente
+    Object.keys(datosFirebase).forEach((idPaciente) => {
+        const pacienteData = datosFirebase[idPaciente];
 
-        const snapshotUsuario = await window.db.ref("usuarios/" + user.uid).once("value");
-        const usuarioData = snapshotUsuario.val();
-
-        if (!usuarioData) {
-            console.error("⚠ No se encontró información del usuario en la base de datos.");
-            return;
-        }
-
-        const esMedico = usuarioData.rol === "medico";
-
-        Object.keys(datosFirebase).forEach((idPaciente) => {
-            const pacienteData = datosFirebase[idPaciente];
-
-            // 🔥 Si el usuario es paciente, solo debe ver su propio ID
-            if (!esMedico && idPaciente !== user.uid) {
-                return;
-            }
-
-            let nombrePaciente;
-            let fechas;
-
-            if (esMedico) {
-                nombrePaciente = Object.keys(pacienteData)[0];
-                fechas = pacienteData[nombrePaciente];
-            } else {
-                // 🔥 Si es paciente, su información comienza directamente desde su ID
-                nombrePaciente = "Mis Registros";
-                fechas = pacienteData;
-            }
-
+        // 🔥 Obtenemos el nombre del paciente dentro del ID
+        Object.keys(pacienteData).forEach((nombrePaciente) => {
+            const fechas = pacienteData[nombrePaciente]; // 🔥 Ahora accedemos al nombre real
             if (!fechas) return;
 
-            // 🔥 Crear la estructura para cada paciente
+            // 🔥 Crear la estructura para cada paciente (sin mostrar el ID)
             const pacienteDiv = document.createElement("div");
             pacienteDiv.className = "paciente";
             pacienteDiv.innerHTML = `
@@ -359,15 +329,32 @@ function actualizarListaPacientes(snapshot) {
                 panelPaciente.appendChild(fechaDiv);
             });
         });
-
-        activarAccordion(); // 🔥 Mantiene la funcionalidad del acordeón sin cambios
     });
-}
+
+    activarAccordion(); // 🔥 Mantiene la funcionalidad del acordeón sin cambios
 
 
-        activarAccordion(); // 🔥 Mantiene la funcionalidad del acordeón sin cambios
-    });
-}
+
+            // 🔥 Restaurar el estado de los acordeones después de actualizar los datos
+            document.querySelectorAll(".paciente .accordion").forEach((btn) => {
+                const paciente = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente]._abierto) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
+                }
+            });
+
+            document.querySelectorAll(".fecha .accordion").forEach((btn) => {
+                const pacienteDiv = btn.closest(".paciente");
+                if (!pacienteDiv) return;
+                const paciente = pacienteDiv.querySelector(".accordion").textContent.trim();
+                const fecha = btn.textContent.trim();
+                if (estadoDesplegables[paciente] && estadoDesplegables[paciente][fecha]) {
+                    btn.classList.add("active");
+                    btn.nextElementSibling.style.display = "block";
+                }
+            });
+        }
 
         function activarAccordion() {
             document.querySelectorAll(".accordion").forEach((accordion) => {
