@@ -51,7 +51,8 @@
 
     .form-container h2 { margin-bottom: 20px; font-size: 24px; text-align: center; }
     
-    .form-container input {
+    .form-container input,
+    .form-container select {
       width: 100%; padding: 10px; margin: 10px 0;
       border: none; border-radius: 5px; font-size: 16px;
     }
@@ -133,8 +134,17 @@
 
     <div class="form-container" id="authForms">
       <h2 id="formTitle">Ingresar</h2>
+
+      <!-- Inputs para ingreso -->
       <input type="email" id="email" placeholder="Email Address">
       <input type="password" id="password" placeholder="Password">
+
+      <!-- Select para el rol, SOLO se muestra cuando se está registrando -->
+      <select id="roleSelect" style="display: none;">
+        <option value="paciente">Paciente</option>
+        <option value="medico">Médico</option>
+      </select>
+
       <button id="authButton" onclick="authAction()">Ingresar a cuenta</button>
       <button class="toggle-btn" onclick="toggleAuth()">Crear cuenta</button>
     </div>
@@ -151,6 +161,20 @@
   </div>
 
   <script>
+    // Función para mostrar un modal con mensajes
+    function mostrarModal(mensaje) {
+      const modal = document.getElementById("modalMensaje");
+      const modalTexto = document.getElementById("modalTexto");
+      modalTexto.textContent = mensaje;
+      modal.style.display = "flex";
+    }
+
+    // Cerrar el modal al dar clic en "Aceptar"
+    document.getElementById("btnCerrarModal").onclick = function() {
+      document.getElementById("modalMensaje").style.display = "none";
+    };
+
+    // Cargar configuración de Firebase desde un archivo externo en GitHub
     async function cargarConfigFirebase() {
       try {
         const response = await fetch("https://raw.githubusercontent.com/Komikoo-Koo/FireKokosVDB/Scripts/firebase-config.js");
@@ -170,11 +194,14 @@
     }
     cargarConfigFirebase();
 
+    // Estado que controla si estamos en modo "Iniciar sesión" o "Crear cuenta"
     let isSignIn = true;
+
     function toggleAuth() {
       const title = document.getElementById("formTitle");
       const authButton = document.getElementById("authButton");
       const toggleBtn = document.querySelector(".toggle-btn");
+      const roleSelect = document.getElementById("roleSelect");
 
       isSignIn = !isSignIn;
 
@@ -182,16 +209,21 @@
         title.textContent = "Ingresar";
         authButton.textContent = "Ingresar a cuenta";
         toggleBtn.textContent = "Crear cuenta";
+        // Ocultar el selector de rol al iniciar sesión
+        roleSelect.style.display = "none";
       } else {
         title.textContent = "Registro";
         authButton.textContent = "Crear cuenta";
         toggleBtn.textContent = "¿Ya tienes cuenta?";
+        // Mostrar el selector de rol al crear cuenta
+        roleSelect.style.display = "block";
       }
     }
 
     async function authAction() {
       let email = document.getElementById("email").value.trim();
       let password = document.getElementById("password").value.trim();
+      let roleSelect = document.getElementById("roleSelect").value;
 
       if (email === "" || password === "") {
         mostrarModal("Por favor, llena todos los campos.");
@@ -200,11 +232,22 @@
 
       try {
         if (isSignIn) {
+          // Iniciar sesión
           const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
           mostrarModal("Inicio de sesión exitoso.");
+          // Redirige a la página que necesites
           setTimeout(() => window.location.href = "New.html", 1500);
         } else {
+          // Crear cuenta
           const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
+          const uid = userCredential.user.uid;
+
+          // 🔥 Guardar datos en "usuarios/uid" con email y rol
+          await window.db.ref("usuarios/" + uid).set({
+            email: email,
+            rol: roleSelect  // "medico" o "paciente"
+          });
+
           mostrarModal("Registro exitoso. Redirigiendo...");
           setTimeout(() => window.location.href = "New.html", 1500);
         }
@@ -212,15 +255,6 @@
         mostrarModal("Error: " + error.message);
       }
     }
-
-    function mostrarModal(mensaje) {
-      document.getElementById("modalTexto").textContent = mensaje;
-      document.getElementById("modalMensaje").style.display = "flex";
-    }
-
-    document.getElementById("btnCerrarModal").addEventListener("click", function() {
-      document.getElementById("modalMensaje").style.display = "none";
-    });
   </script>
 </body>
 </html>
