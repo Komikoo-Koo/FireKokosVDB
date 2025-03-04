@@ -285,12 +285,12 @@
 
 function actualizarListaPacientes(snapshot) {
     const datosFirebase = snapshot.val() || {};
-    console.log("🔥 Datos actualizados:", datosFirebase);
+    console.log("🔥 Datos cargados correctamente:", datosFirebase);
 
     const listaPacientes = document.getElementById("lista-pacientes");
     listaPacientes.innerHTML = "";
 
-    // 🔥 Verificar el usuario autenticado
+    // 🔥 Verificar el usuario autenticado y esperar a que Firebase cargue completamente
     window.auth.onAuthStateChanged(async (user) => {
         if (!user) {
             console.warn("❌ No hay usuario autenticado.");
@@ -299,7 +299,7 @@ function actualizarListaPacientes(snapshot) {
 
         const snapshotUsuario = await window.db.ref("usuarios/" + user.uid).once("value");
         const usuarioData = snapshotUsuario.val();
-        
+
         if (!usuarioData) {
             console.error("⚠ No se encontró información del usuario en la base de datos.");
             return;
@@ -312,19 +312,28 @@ function actualizarListaPacientes(snapshot) {
 
             // 🔥 Si el usuario es paciente, solo debe ver su propio ID
             if (!esMedico && idPaciente !== user.uid) {
-                return; // Evita que un paciente vea otros registros
+                return;
             }
 
-            // 🔥 Para los pacientes, el nombre real está en la clave del ID
-            const nombrePaciente = esMedico ? Object.keys(pacienteData)[0] : idPaciente;
-            const fechas = esMedico ? pacienteData[nombrePaciente] : pacienteData;
+            let nombrePaciente;
+            let fechas;
+
+            if (esMedico) {
+                nombrePaciente = Object.keys(pacienteData)[0];
+                fechas = pacienteData[nombrePaciente];
+            } else {
+                // 🔥 Si es paciente, su información comienza directamente desde su ID
+                nombrePaciente = "Mis Registros";
+                fechas = pacienteData;
+            }
+
             if (!fechas) return;
 
-            // 🔥 Crear la estructura para cada paciente (ocultar ID solo si es médico)
+            // 🔥 Crear la estructura para cada paciente
             const pacienteDiv = document.createElement("div");
             pacienteDiv.className = "paciente";
             pacienteDiv.innerHTML = `
-                <button class="accordion">${esMedico ? nombrePaciente : "Mis Registros"} ⬇</button>
+                <button class="accordion">${nombrePaciente} ⬇</button>
                 <div class="panel"></div>
             `;
             listaPacientes.appendChild(pacienteDiv);
@@ -350,6 +359,11 @@ function actualizarListaPacientes(snapshot) {
                 panelPaciente.appendChild(fechaDiv);
             });
         });
+
+        activarAccordion(); // 🔥 Mantiene la funcionalidad del acordeón sin cambios
+    });
+}
+
 
         activarAccordion(); // 🔥 Mantiene la funcionalidad del acordeón sin cambios
     });
