@@ -135,7 +135,7 @@
       <h2 id="formTitle">Ingresar</h2>
       <input type="email" id="email" placeholder="Email Address">
       <input type="password" id="password" placeholder="Password">
-      <button onclick="authAction()">Ingresar a cuenta</button>
+      <button id="authButton" onclick="authAction()">Ingresar a cuenta</button>
       <button class="toggle-btn" onclick="toggleAuth()">Crear cuenta</button>
     </div>
   </div>
@@ -173,8 +173,20 @@
     let isSignIn = true;
     function toggleAuth() {
       const title = document.getElementById("formTitle");
+      const authButton = document.getElementById("authButton");
+      const toggleBtn = document.querySelector(".toggle-btn");
+
       isSignIn = !isSignIn;
-      title.textContent = isSignIn ? "Ingresar" : "Registro";
+
+      if (isSignIn) {
+        title.textContent = "Ingresar";
+        authButton.textContent = "Ingresar a cuenta";
+        toggleBtn.textContent = "Crear cuenta";
+      } else {
+        title.textContent = "Registro";
+        authButton.textContent = "Crear cuenta";
+        toggleBtn.textContent = "¿Ya tienes cuenta?";
+      }
     }
 
     async function authAction() {
