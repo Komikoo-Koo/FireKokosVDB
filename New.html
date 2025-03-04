@@ -17,22 +17,22 @@
             --fecha-border: #f9a825;
         }
         
-.usuario-info {
-    position: absolute;
-    top: 20px;
-    right: 50px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+        .usuario-info {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
         #cerrar-sesion {
-    flex-shrink: 0; /* Evita que el botón se reduzca o se mueva */
-}
+            flex-shrink: 0; /* Evita que el botón se reduzca o se mueva */
+        }
 
-#usuario-email {
-    font-weight: bold;
-}
+        #usuario-email {
+            font-weight: bold;
+        }
         
         body.dark-mode {
             --bg-color: #181818;
@@ -66,7 +66,9 @@
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        .buscador { margin-top: 10px; }
+        .buscador { 
+            margin-top: 10px; 
+        }
         
         input {
             padding: 10px;
@@ -82,7 +84,9 @@
             padding: 20px;
         }
 
-        .paciente, .fecha { margin-bottom: 10px; }
+        .paciente, .fecha { 
+            margin-bottom: 10px; 
+        }
 
         .accordion {
             background-color: var(--accordion-bg);
@@ -135,26 +139,24 @@
 </head>
 <body>
     <div class="fixed-header">
-    <h1>Lista de Pacientes</h1>
+        <h1>Lista de Pacientes</h1>
 
-    <div class="usuario-info">
-        <span id="usuario-email">Cargando...</span>
-        <button id="cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
+        <div class="usuario-info">
+            <span id="usuario-email">Cargando...</span>
+            <button id="cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+
+        <button id="toggle-mode">🌙 Modo Oscuro</button>
+        
+        <div class="buscador">
+            <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
+            <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
+        </div>
     </div>
 
-    <button id="toggle-mode">🌙 Modo Oscuro</button>
-    
-    <div class="buscador">
-        <input type="text" id="buscar-paciente" placeholder="Buscar paciente..." oninput="filtrar()">
-        <input type="text" id="buscar-fecha" placeholder="Día Mes Año" oninput="filtrar()">
+    <div id="lista-pacientes-container">
+        <div id="lista-pacientes"></div>
     </div>
-</div>
-
-<div id="lista-pacientes-container">
-    <div id="lista-pacientes"></div>
-</div>
-
-
 
     <!-- 🔥 Cargar Firebase (asegurar que esté antes del script que lo usa) -->
     <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
@@ -177,18 +179,15 @@
                     
                     // 🔥 Verificar si la sesión está iniciada
                     window.auth.onAuthStateChanged((user) => {
-    if (user) {
-        document.getElementById("usuario-email").textContent = user.email;
-        console.log("✅ Sesión activa:", user.email);
-        cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
-    } else {
-        console.log("❌ No hay sesión iniciada.");
-        window.location.href = "Pagina%20de%20registro.html";
-    }
-});
-
-
-
+                        if (user) {
+                            document.getElementById("usuario-email").textContent = user.email;
+                            console.log("✅ Sesión activa:", user.email);
+                            cargarPacientes(); // 🔥 Solo cargamos pacientes si hay sesión
+                        } else {
+                            console.log("❌ No hay sesión iniciada.");
+                            window.location.href = "Pagina%20de%20registro.html";
+                        }
+                    });
                 } else {
                     console.error("🔥 Error: No se pudo cargar la configuración de Firebase.");
                 }
@@ -201,20 +200,17 @@
     </script>
 
     <script>
-    function cerrarSesion() {
-        // Asegúrate de tener referencia a `firebase.auth()`
-        firebase.auth().signOut()
-        .then(() => {
-            console.log("Sesión cerrada con éxito.");
-            // Redirigir al usuario a la página de login o donde desees
-            window.location.href = "Pagina%20de%20registro.html";
-        })
-        .catch((error) => {
-            console.error("Error al cerrar sesión:", error);
-        });
-    }
-</script>
-
+        function cerrarSesion() {
+            firebase.auth().signOut()
+            .then(() => {
+                console.log("Sesión cerrada con éxito.");
+                window.location.href = "Pagina%20de%20registro.html";
+            })
+            .catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+            });
+        }
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -235,107 +231,158 @@
             }
         });
     </script>
+
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
-      async function cargarPacientes() {
-    try {
-        // 🔥 Esperar a que el usuario esté autenticado
-        window.auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                console.warn("❌ No hay usuario autenticado.");
-                return;
+        async function cargarPacientes() {
+            try {
+                window.auth.onAuthStateChanged(async (user) => {
+                    if (!user) {
+                        console.warn("❌ No hay usuario autenticado.");
+                        return;
+                    }
+
+                    console.log("📡 Usuario autenticado:", user.uid);
+
+                    // 🔥 Obtener el rol del usuario en Firebase
+                    const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
+                    const usuarioData = snapshot.val();
+
+                    if (!usuarioData) {
+                        console.error("⚠ No se encontró información del usuario en la base de datos.");
+                        return;
+                    }
+
+                    console.log("📡 Datos del usuario:", usuarioData);
+
+                    // 🔄 Forzar actualización del token (opcional)
+                    user.getIdToken(true).then(() => {
+                        console.log("🔄 Token actualizado, recargando datos...");
+                    }).catch((error) => {
+                        console.error("⚠ Error al actualizar el token:", error);
+                    });
+
+                    // 🔥 Cargar datos dependiendo del rol
+                    if (usuarioData.rol === "medico") {
+                        console.log("✅ Usuario es médico, cargando todos los pacientes...");
+                        window.db.ref("Pacientes").on("value", (snap) => {
+                            actualizarListaPacientes(snap, "medico");
+                        });
+                    } else {
+                        console.log("✅ Usuario es paciente, cargando solo su información...");
+                        window.db.ref("Pacientes/" + user.uid).on("value", (snap) => {
+                            actualizarListaPacientes(snap, "paciente");
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error("🔥 Error al cargar pacientes:", error);
+            }
+        }
+
+        // ——————————————————————————————————————————————————
+        // Actualiza la lista de pacientes
+        // Dependiendo del rol, se recorre la base de datos
+        // de forma diferente.
+        // ——————————————————————————————————————————————————
+        function actualizarListaPacientes(snapshot, rol) {
+            const datosFirebase = snapshot.val() || {};
+            console.log("🔥 Datos actualizados:", datosFirebase);
+
+            const listaPacientes = document.getElementById("lista-pacientes");
+            listaPacientes.innerHTML = "";
+
+            // Si rol = "medico", la estructura se asume:
+            //  Pacientes -> <idPaciente> -> <nombrePaciente> -> <fecha> -> {datos}
+            // y se "oculta" el ID para la interfaz (solo se ve nombre).
+            if (rol === "medico") {
+                Object.keys(datosFirebase).forEach((idPaciente) => {
+                    const pacienteData = datosFirebase[idPaciente];
+                    // pacienteData = { NombreX: { fecha1: {...}, fecha2: {...} }, ... }
+
+                    // Recorremos cada "nombrePaciente" dentro de este id
+                    Object.keys(pacienteData).forEach((nombrePaciente) => {
+                        const fechas = pacienteData[nombrePaciente];
+                        if (!fechas) return;
+
+                        // Crear la estructura para cada paciente
+                        const pacienteDiv = document.createElement("div");
+                        pacienteDiv.className = "paciente";
+                        pacienteDiv.innerHTML = `
+                            <button class="accordion">${nombrePaciente} ⬇</button>
+                            <div class="panel"></div>
+                        `;
+                        listaPacientes.appendChild(pacienteDiv);
+
+                        // Panel interno donde se listan las fechas
+                        const panelPaciente = pacienteDiv.querySelector(".panel");
+
+                        Object.keys(fechas).forEach((fecha) => {
+                            const datos = fechas[fecha];
+                            if (!datos) return;
+
+                            const fechaDiv = document.createElement("div");
+                            fechaDiv.className = "fecha";
+                            fechaDiv.innerHTML = `
+                                <button class="accordion fecha-btn">${fecha} 📅</button>
+                                <div class="panel fecha-panel">
+                                    ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
+                                    ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
+                                    ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
+                                    ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
+                                    ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
+                                </div>
+                            `;
+                            panelPaciente.appendChild(fechaDiv);
+                        });
+                    });
+                });
+            }
+            // Si rol = "paciente", la estructura que recibimos es
+            //  { nombrePaciente: { fecha1: {...}, fecha2: {...} } }
+            // (ya que en la suscripción se apuntó a "Pacientes/<uid>")
+            else {
+                // Simplemente iteramos la clave "nombrePaciente"
+                Object.keys(datosFirebase).forEach((nombrePaciente) => {
+                    const fechas = datosFirebase[nombrePaciente];
+                    if (!fechas) return;
+
+                    const pacienteDiv = document.createElement("div");
+                    pacienteDiv.className = "paciente";
+                    pacienteDiv.innerHTML = `
+                        <button class="accordion">${nombrePaciente} ⬇</button>
+                        <div class="panel"></div>
+                    `;
+                    listaPacientes.appendChild(pacienteDiv);
+
+                    const panelPaciente = pacienteDiv.querySelector(".panel");
+
+                    Object.keys(fechas).forEach((fecha) => {
+                        const datos = fechas[fecha];
+                        if (!datos) return;
+
+                        const fechaDiv = document.createElement("div");
+                        fechaDiv.className = "fecha";
+                        fechaDiv.innerHTML = `
+                            <button class="accordion fecha-btn">${fecha} 📅</button>
+                            <div class="panel fecha-panel">
+                                ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
+                                ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
+                                ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
+                                ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
+                                ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
+                            </div>
+                        `;
+                        panelPaciente.appendChild(fechaDiv);
+                    });
+                });
             }
 
-            console.log("📡 Usuario autenticado:", user.uid);
+            // Mantener la funcionalidad del acordeón
+            activarAccordion();
 
-            // 🔥 Obtener el rol del usuario en Firebase
-            const snapshot = await window.db.ref("usuarios/" + user.uid).once("value");
-            const usuarioData = snapshot.val();
-
-            if (!usuarioData) {
-                console.error("⚠ No se encontró información del usuario en la base de datos.");
-                return;
-            }
-
-            console.log("📡 Datos del usuario:", usuarioData);
-
-            // 🔄 Si el rol del usuario ha cambiado, forzar actualización del token
-            user.getIdToken(true).then(() => {
-                console.log("🔄 Token actualizado, recargando datos...");
-            }).catch((error) => {
-                console.error("⚠ Error al actualizar el token:", error);
-            });
-
-            // 🔥 Cargar datos dependiendo del rol
-            if (usuarioData.rol === "medico") {
-                console.log("✅ Usuario es médico, cargando todos los pacientes...");
-                window.db.ref("Pacientes").on("value", actualizarListaPacientes);
-            } else {
-                console.log("✅ Usuario es paciente, cargando solo su información...");
-                window.db.ref("Pacientes/" + user.uid).on("value", actualizarListaPacientes);
-            }
-        });
-    } catch (error) {
-        console.error("🔥 Error al cargar pacientes:", error);
-    }
-}
-
-
-
-function actualizarListaPacientes(snapshot) {
-    const datosFirebase = snapshot.val() || {};
-    console.log("🔥 Datos actualizados:", datosFirebase);
-
-    const listaPacientes = document.getElementById("lista-pacientes");
-    listaPacientes.innerHTML = "";
-
-    // 🔥 Ahora recorremos primero el ID del paciente
-    Object.keys(datosFirebase).forEach((idPaciente) => {
-        const pacienteData = datosFirebase[idPaciente];
-
-        // 🔥 Obtenemos el nombre del paciente dentro del ID
-        Object.keys(pacienteData).forEach((nombrePaciente) => {
-            const fechas = pacienteData[nombrePaciente]; // 🔥 Ahora accedemos al nombre real
-            if (!fechas) return;
-
-            // 🔥 Crear la estructura para cada paciente (sin mostrar el ID)
-            const pacienteDiv = document.createElement("div");
-            pacienteDiv.className = "paciente";
-            pacienteDiv.innerHTML = `
-                <button class="accordion">${nombrePaciente} ⬇</button>
-                <div class="panel"></div>
-            `;
-            listaPacientes.appendChild(pacienteDiv);
-
-            const panelPaciente = pacienteDiv.querySelector(".panel");
-
-            Object.keys(fechas).forEach((fecha) => {
-                const datos = fechas[fecha];
-
-                // 🔥 Estructura para mostrar fechas y datos médicos
-                const fechaDiv = document.createElement("div");
-                fechaDiv.className = "fecha";
-                fechaDiv.innerHTML = `
-                    <button class="accordion fecha-btn">${fecha} 📅</button>
-                    <div class="panel fecha-panel">
-                        ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
-                        ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
-                        ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
-                        ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
-                        ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
-                    </div>
-                `;
-                panelPaciente.appendChild(fechaDiv);
-            });
-        });
-    });
-
-    activarAccordion(); // 🔥 Mantiene la funcionalidad del acordeón sin cambios
-
-
-
-            // 🔥 Restaurar el estado de los acordeones después de actualizar los datos
+            // Restaurar el estado de los acordeones después de actualizar
             document.querySelectorAll(".paciente .accordion").forEach((btn) => {
                 const paciente = btn.textContent.trim();
                 if (estadoDesplegables[paciente] && estadoDesplegables[paciente]._abierto) {
@@ -379,6 +426,7 @@ function actualizarListaPacientes(snapshot) {
             });
         }
     </script>
+
     <script>
         function filtrar() {
             let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
