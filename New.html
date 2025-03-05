@@ -59,7 +59,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            background-color: var(--bg-color !important);
+            background-color: var(--bg-color);
             padding: 20px;
             text-align: center;
             z-index: 1000;
@@ -113,10 +113,11 @@
         }
 
         /* 🔥 Corrección: Se aplica el color correcto a las fechas */
-        .fecha .accordion {
-            background-color: var(--fecha-bg);
-            border-left: 3px solid var(--fecha-border);
-        }
+        .fecha .accordion + .panel {
+    background-color: var(--fecha-bg) !important; /* Amarillo */
+    border-left: 3px solid var(--fecha-border);
+    color: black !important; /* Asegura que el texto sea visible */
+}
 
         .fecha .active, .fecha .accordion:hover {
             background-color: var(--fecha-border);
