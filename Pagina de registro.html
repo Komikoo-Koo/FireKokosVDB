@@ -271,7 +271,7 @@
       }
     }
 
-    async function authAction() {
+async function authAction() {
       let email = document.getElementById("email").value.trim();
       let password = document.getElementById("password").value.trim();
       let roleSelect = document.getElementById("roleSelect").value;
@@ -286,21 +286,44 @@
           // Iniciar sesión
           const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
           mostrarModal("Inicio de sesión exitoso.");
-          // Redirige a la página que necesites
           setTimeout(() => window.location.href = "New.html", 1500);
         } else {
-          // Crear cuenta
+          // Crear cuenta y esperar confirmación de Firebase
           const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
           const uid = userCredential.user.uid;
 
-          // 🔥 Guardar datos en "usuarios/uid" con email y rol
+          // Guardar datos en "usuarios/uid"
           await window.db.ref("usuarios/" + uid).set({
             email: email,
-            rol: roleSelect  // "medico" o "paciente"
+            rol: roleSelect
           });
 
-          mostrarModal("Registro exitoso. Redirigiendo...");
-          setTimeout(() => window.location.href = "New.html", 1500);
+          mostrarModal("Registro exitoso. Creando perfil...");
+
+          // Esperar a que Firebase confirme que la sesión está activa
+          window.auth.onAuthStateChanged(async (user) => {
+            if (user && user.uid === uid) {
+              // Verificar el rol del usuario
+              const snapshot = await window.db.ref("usuarios/" + uid).once("value");
+              const userData = snapshot.val();
+
+              if (userData && userData.rol === "paciente") {
+                // Crear la entrada en "Pacientes" si no existe
+                const pacienteRef = window.db.ref("Pacientes/" + uid);
+                const pacienteSnapshot = await pacienteRef.once("value");
+
+                if (!pacienteSnapshot.exists()) {
+                  await pacienteRef.set({
+                    id: uid,
+                    nombre: userData.email.split("@")[0] // Usa la parte antes de "@" como nombre
+                  });
+                }
+              }
+
+              // Redirigir después de confirmar que todo está creado
+              setTimeout(() => window.location.href = "New.html", 1500);
+            }
+          });
         }
       } catch (error) {
         mostrarModal("Error: " + error.message);
