@@ -340,7 +340,20 @@
           const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
           const uid = userCredential.user.uid;
 
-          // Guardar datos en "usuarios/uid"
+          // 🔥 Definimos userData ANTES de usarlo
+          const userData = {
+            email: email,
+            rol: roleSelect,
+            nombre: nombre,
+            curp: curp,
+            fechaNacimiento: fechaNacimiento,
+            sexo: sexo
+          };
+
+          // Almacenar primero en "usuarios/uid"
+          await window.db.ref("usuarios/" + uid).set(userData);
+
+          // Ahora sí: Guardar en "Pacientes/uid/curp" SIN error
           await window.db.ref("Pacientes/" + uid + "/" + userData.curp).set({
             email: userData.email,
             rol: userData.rol,
@@ -349,7 +362,6 @@
             fechaNacimiento: userData.fechaNacimiento,
             sexo: userData.sexo
           });
-
 
           mostrarModal("Registro exitoso. Creando perfil...");
 
@@ -375,7 +387,6 @@
                   });
                 }
               }
-
               // Redirigir después de confirmar que todo está creado
               setTimeout(() => window.location.href = "New.html", 1500);
             }
