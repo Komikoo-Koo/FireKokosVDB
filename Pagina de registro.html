@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1.0">
 
   <title>Komikoos Vitals Data Base</title>
 
@@ -158,16 +158,16 @@
     #btnCerrarModal:hover {
       background-color: #e68900;
     }
+
     @media (max-width: 900px) {
-    .welcome-text {
+      .welcome-text {
         display: none; /* Oculta el cartel y el subtítulo */
-    }
+      }
 
-    .container {
+      .container {
         justify-content: center; /* Centra solo el formulario */
+      }
     }
-}
-
   </style>
 </head>
 <body>
@@ -194,6 +194,16 @@
       <select id="roleSelect" style="display: none;">
         <option value="paciente">Paciente</option>
         <option value="medico">Médico</option>
+      </select>
+
+      <!-- NUEVOS CAMPOS (ocultos inicialmente) -->
+      <input type="text" id="nombre" placeholder="Nombre Completo" style="display: none;">
+      <input type="text" id="curp" placeholder="CURP" style="display: none;">
+      <input type="date" id="fechaNacimiento" style="display: none;">
+      <select id="sexo" style="display: none;">
+        <option value="">Sexo biológico</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Femenino">Femenino</option>
       </select>
 
       <button id="authButton" onclick="authAction()">Ingresar a cuenta</button>
@@ -254,31 +264,70 @@
       const toggleBtn = document.querySelector(".toggle-btn");
       const roleSelect = document.getElementById("roleSelect");
 
+      // NUEVOS CAMPOS
+      const nombre = document.getElementById("nombre");
+      const curp = document.getElementById("curp");
+      const fechaNacimiento = document.getElementById("fechaNacimiento");
+      const sexo = document.getElementById("sexo");
+
       isSignIn = !isSignIn;
 
       if (isSignIn) {
         title.textContent = "Ingresar";
         authButton.textContent = "Ingresar a cuenta";
         toggleBtn.textContent = "Crear cuenta";
-        // Ocultar el selector de rol al iniciar sesión
         roleSelect.style.display = "none";
+
+        // Ocultamos los nuevos campos
+        nombre.style.display = "none";
+        curp.style.display = "none";
+        fechaNacimiento.style.display = "none";
+        sexo.style.display = "none";
       } else {
         title.textContent = "Registro";
         authButton.textContent = "Crear cuenta";
         toggleBtn.textContent = "¿Ya tienes cuenta?";
-        // Mostrar el selector de rol al crear cuenta
         roleSelect.style.display = "block";
+
+        // Mostramos los nuevos campos
+        nombre.style.display = "block";
+        curp.style.display = "block";
+        fechaNacimiento.style.display = "block";
+        sexo.style.display = "block";
       }
     }
 
-async function authAction() {
+    async function authAction() {
       let email = document.getElementById("email").value.trim();
       let password = document.getElementById("password").value.trim();
       let roleSelect = document.getElementById("roleSelect").value;
 
-      if (email === "" || password === "") {
-        mostrarModal("Por favor, llena todos los campos.");
-        return;
+      // NUEVOS CAMPOS
+      let nombre = document.getElementById("nombre").value.trim();
+      let curp = document.getElementById("curp").value.trim();
+      let fechaNacimiento = document.getElementById("fechaNacimiento").value;
+      let sexo = document.getElementById("sexo").value;
+
+      if (isSignIn) {
+        // Validación para inicio de sesión
+        if (email === "" || password === "") {
+          mostrarModal("Por favor, llena todos los campos.");
+          return;
+        }
+      } else {
+        // Validación para registro (incluye los nuevos campos)
+        if (
+          email === "" ||
+          password === "" ||
+          nombre === "" ||
+          curp === "" ||
+          fechaNacimiento === "" ||
+          sexo === "" ||
+          roleSelect === ""
+        ) {
+          mostrarModal("Por favor, llena todos los campos para registrarte.");
+          return;
+        }
       }
 
       try {
@@ -295,7 +344,11 @@ async function authAction() {
           // Guardar datos en "usuarios/uid"
           await window.db.ref("usuarios/" + uid).set({
             email: email,
-            rol: roleSelect
+            rol: roleSelect,
+            nombre: nombre,
+            curp: curp,
+            fechaNacimiento: fechaNacimiento,
+            sexo: sexo
           });
 
           mostrarModal("Registro exitoso. Creando perfil...");
@@ -315,7 +368,10 @@ async function authAction() {
                 if (!pacienteSnapshot.exists()) {
                   await pacienteRef.set({
                     id: uid,
-                    nombre: userData.email.split("@")[0] // Usa la parte antes de "@" como nombre
+                    nombre: userData.nombre,
+                    curp: userData.curp,
+                    fechaNacimiento: userData.fechaNacimiento,
+                    sexo: userData.sexo
                   });
                 }
               }
