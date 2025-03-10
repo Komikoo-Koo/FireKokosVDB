@@ -127,7 +127,6 @@
             border-left: 3px solid var(--fecha-border); /* Solo la columna izquierda es amarilla */
         }
 
-
         .fecha .active, .fecha .accordion:hover {
             background-color: var(--fecha-border);
         }
@@ -146,19 +145,17 @@
             background-color: var(--accordion-hover);
         }
 
-@media (max-width: 768px) {
-    #lista-pacientes-container {
-        margin-top: 212px; /* Menos margen en pantallas más angostas */
-    }
-}
+        @media (max-width: 768px) {
+            #lista-pacientes-container {
+                margin-top: 212px; /* Menos margen en pantallas más angostas */
+            }
+        }
 
-@media (max-width: 480px) {
-    #lista-pacientes-container {
-        margin-top: 263px; /* Aún menos margen en pantallas pequeñas */
-    }
-}
-
-        
+        @media (max-width: 480px) {
+            #lista-pacientes-container {
+                margin-top: 263px; /* Aún menos margen en pantallas pequeñas */
+            }
+        }
     </style>
 </head>
 <body>
@@ -317,85 +314,110 @@
             const listaPacientes = document.getElementById("lista-pacientes");
             listaPacientes.innerHTML = "";
 
-            // Si rol = "medico", la estructura se asume:
-            //  Pacientes -> <idPaciente> -> <nombrePaciente> -> <fecha> -> {datos}
-            // y se "oculta" el ID para la interfaz (solo se ve nombre).
             if (rol === "medico") {
+                /* ----------------------------------------------
+                   ESTRUCTURA (médico):
+                   Pacientes -> <idPaciente> -> { NombrePaciente: { ...datos } }
+                   Dentro de { ...datos }, podría haber:
+                     - nombre, curp, fechaNacimiento, sexo
+                     - Fechas: 2024-03-09, 2024-03-10, etc.
+                ---------------------------------------------- */
                 Object.keys(datosFirebase).forEach((idPaciente) => {
                     const pacienteData = datosFirebase[idPaciente];
-                    // pacienteData = { NombreX: { fecha1: {...}, fecha2: {...} }, ... }
 
-                    // Recorremos cada "nombrePaciente" dentro de este id
-                    Object.keys(pacienteData).forEach((nombrePaciente) => {
-                        const fechas = pacienteData[nombrePaciente];
-                        if (!fechas) return;
+                    // pacienteData = { NombreX: { nombre, curp, fechaNac, sexo, 2024-03-09: {...}, 2024-03-10: {...} }, OtroNombre: {...} }
+                    Object.keys(pacienteData).forEach((nombreKey) => {
+                        const datosDeEstePaciente = pacienteData[nombreKey];
+                        if (!datosDeEstePaciente) return;
 
-                        // Crear la estructura para cada paciente
+                        // 🔥 Extraemos datos personales y filtramos fechas
+                        const { nombre, curp, fechaNacimiento, sexo, ...fechasObj } = datosDeEstePaciente;
+
+                        // Crear div paciente y colocar datos personales arriba
                         const pacienteDiv = document.createElement("div");
                         pacienteDiv.className = "paciente";
+
+                        // Mostrar un encabezado con el 'nombreKey' (por ej. 'Juan Perez ⬇')
                         pacienteDiv.innerHTML = `
-                            <button class="accordion">${nombrePaciente} ⬇</button>
-                            <div class="panel"></div>
+                            <button class="accordion">${nombreKey} ⬇</button>
+                            <div class="panel">
+                                ${nombre ? `<p><strong>Nombre:</strong> ${nombre}</p>` : ""}
+                                ${curp ? `<p><strong>CURP:</strong> ${curp}</p>` : ""}
+                                ${fechaNacimiento ? `<p><strong>Fecha de Nacimiento:</strong> ${fechaNacimiento}</p>` : ""}
+                                ${sexo ? `<p><strong>Sexo:</strong> ${sexo}</p>` : ""}
+                                <hr>
+                            </div>
                         `;
                         listaPacientes.appendChild(pacienteDiv);
 
-                        // Panel interno donde se listan las fechas
+                        // Panel interno
                         const panelPaciente = pacienteDiv.querySelector(".panel");
 
-                        Object.keys(fechas).forEach((fecha) => {
-                            const datos = fechas[fecha];
-                            if (!datos) return;
+                        // Recorrer las supuestas fechas (YYYY-MM-DD)
+                        Object.keys(fechasObj).forEach((fecha) => {
+                            const datosFecha = fechasObj[fecha];
+                            if (!datosFecha) return;
 
+                            // Crear subacordeón para la fecha
                             const fechaDiv = document.createElement("div");
                             fechaDiv.className = "fecha";
                             fechaDiv.innerHTML = `
                                 <button class="accordion fecha-btn">${fecha} 📅</button>
                                 <div class="panel fecha-panel">
-                                    ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
-                                    ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
-                                    ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
-                                    ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
-                                    ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
+                                    ${datosFecha.altura ? `<p><strong>Altura:</strong> ${datosFecha.altura} cm</p>` : ""}
+                                    ${datosFecha.temperatura ? `<p><strong>Temperatura:</strong> ${datosFecha.temperatura} °C</p>` : ""}
+                                    ${datosFecha.presion ? `<p><strong>Presión Arterial:</strong> ${datosFecha.presion}</p>` : ""}
+                                    ${datosFecha.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datosFecha.ritmo_cardiaco} bpm</p>` : ""}
+                                    ${datosFecha.peso ? `<p><strong>Peso:</strong> ${datosFecha.peso} kg</p>` : ""}
                                 </div>
                             `;
                             panelPaciente.appendChild(fechaDiv);
                         });
                     });
                 });
-            }
-            // Si rol = "paciente", la estructura que recibimos es
-            //  { nombrePaciente: { fecha1: {...}, fecha2: {...} } }
-            // (ya que en la suscripción se apuntó a "Pacientes/<uid>")
-            else {
-                // Simplemente iteramos la clave "nombrePaciente"
-                Object.keys(datosFirebase).forEach((nombrePaciente) => {
-                    const fechas = datosFirebase[nombrePaciente];
-                    if (!fechas) return;
+            } else {
+                /* ----------------------------------------------
+                   ESTRUCTURA (paciente):
+                   Pacientes -> <uid> -> { NombrePaciente: { ...datos } }
+                ---------------------------------------------- */
+                // ej: datosFirebase = { NombreX: { nombre, curp, fechaNac, sexo, 2024-03-09: {...}, 2024-03-10: {...} } }
+                Object.keys(datosFirebase).forEach((nombreKey) => {
+                    const datosDeEstePaciente = datosFirebase[nombreKey];
+                    if (!datosDeEstePaciente) return;
+
+                    const { nombre, curp, fechaNacimiento, sexo, ...fechasObj } = datosDeEstePaciente;
 
                     const pacienteDiv = document.createElement("div");
                     pacienteDiv.className = "paciente";
                     pacienteDiv.innerHTML = `
-                        <button class="accordion">${nombrePaciente} ⬇</button>
-                        <div class="panel"></div>
+                        <button class="accordion">${nombreKey} ⬇</button>
+                        <div class="panel">
+                            ${nombre ? `<p><strong>Nombre:</strong> ${nombre}</p>` : ""}
+                            ${curp ? `<p><strong>CURP:</strong> ${curp}</p>` : ""}
+                            ${fechaNacimiento ? `<p><strong>Fecha de Nacimiento:</strong> ${fechaNacimiento}</p>` : ""}
+                            ${sexo ? `<p><strong>Sexo:</strong> ${sexo}</p>` : ""}
+                            <hr>
+                        </div>
                     `;
                     listaPacientes.appendChild(pacienteDiv);
 
                     const panelPaciente = pacienteDiv.querySelector(".panel");
 
-                    Object.keys(fechas).forEach((fecha) => {
-                        const datos = fechas[fecha];
-                        if (!datos) return;
+                    // Recorrer las claves que representen fechas
+                    Object.keys(fechasObj).forEach((fecha) => {
+                        const datosFecha = fechasObj[fecha];
+                        if (!datosFecha) return;
 
                         const fechaDiv = document.createElement("div");
                         fechaDiv.className = "fecha";
                         fechaDiv.innerHTML = `
                             <button class="accordion fecha-btn">${fecha} 📅</button>
                             <div class="panel fecha-panel">
-                                ${datos.altura ? `<p><strong>Altura:</strong> ${datos.altura} cm</p>` : ""}
-                                ${datos.temperatura ? `<p><strong>Temperatura:</strong> ${datos.temperatura} °C</p>` : ""}
-                                ${datos.presion ? `<p><strong>Presión Arterial:</strong> ${datos.presion}</p>` : ""}
-                                ${datos.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datos.ritmo_cardiaco} bpm</p>` : ""}
-                                ${datos.peso ? `<p><strong>Peso:</strong> ${datos.peso} kg</p>` : ""}
+                                ${datosFecha.altura ? `<p><strong>Altura:</strong> ${datosFecha.altura} cm</p>` : ""}
+                                ${datosFecha.temperatura ? `<p><strong>Temperatura:</strong> ${datosFecha.temperatura} °C</p>` : ""}
+                                ${datosFecha.presion ? `<p><strong>Presión Arterial:</strong> ${datosFecha.presion}</p>` : ""}
+                                ${datosFecha.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datosFecha.ritmo_cardiaco} bpm</p>` : ""}
+                                ${datosFecha.peso ? `<p><strong>Peso:</strong> ${datosFecha.peso} kg</p>` : ""}
                             </div>
                         `;
                         panelPaciente.appendChild(fechaDiv);
