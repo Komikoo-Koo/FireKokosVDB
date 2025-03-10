@@ -256,6 +256,19 @@
     <script>
         let estadoDesplegables = {}; // 🔥 Guarda el estado de los acordeones
 
+        // 🔥 Función para calcular la edad a partir de la fecha de nacimiento
+        function calcularEdad(fechaNacimiento) {
+            if (!fechaNacimiento) return "No disponible";
+            const hoy = new Date();
+            const nacimiento = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const mes = hoy.getMonth() - nacimiento.getMonth();
+            if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
+            return `${edad} años`;
+        }
+
         async function cargarPacientes() {
             try {
                 window.auth.onAuthStateChanged(async (user) => {
@@ -319,32 +332,33 @@
                    ESTRUCTURA (médico):
                    Pacientes -> <idPaciente> -> { NombrePaciente: { ...datos } }
                    Dentro de { ...datos }, podría haber:
-                     - nombre, curp, fechaNacimiento, sexo
+                     - nombre, curp, fechaNacimiento, sexo, email, rol
                      - Fechas: 2024-03-09, 2024-03-10, etc.
                 ---------------------------------------------- */
                 Object.keys(datosFirebase).forEach((idPaciente) => {
                     const pacienteData = datosFirebase[idPaciente];
 
-                    // pacienteData = { NombreX: { nombre, curp, fechaNac, sexo, 2024-03-09: {...}, 2024-03-10: {...} }, OtroNombre: {...} }
                     Object.keys(pacienteData).forEach((nombreKey) => {
                         const datosDeEstePaciente = pacienteData[nombreKey];
                         if (!datosDeEstePaciente) return;
 
-                        // 🔥 Extraemos datos personales y filtramos fechas
-                        const { nombre, curp, fechaNacimiento, sexo, ...fechasObj } = datosDeEstePaciente;
+                        const { nombre, curp, fechaNacimiento, sexo, email, rol, ...fechasObj } = datosDeEstePaciente;
+                        const edadCalculada = calcularEdad(fechaNacimiento);
 
                         // Crear div paciente y colocar datos personales arriba
                         const pacienteDiv = document.createElement("div");
                         pacienteDiv.className = "paciente";
 
-                        // Mostrar un encabezado con el 'nombreKey' (por ej. 'Juan Perez ⬇')
                         pacienteDiv.innerHTML = `
                             <button class="accordion">${nombreKey} ⬇</button>
                             <div class="panel">
                                 ${nombre ? `<p><strong>Nombre:</strong> ${nombre}</p>` : ""}
                                 ${curp ? `<p><strong>CURP:</strong> ${curp}</p>` : ""}
                                 ${fechaNacimiento ? `<p><strong>Fecha de Nacimiento:</strong> ${fechaNacimiento}</p>` : ""}
+                                <p><strong>Edad:</strong> ${edadCalculada}</p>
                                 ${sexo ? `<p><strong>Sexo:</strong> ${sexo}</p>` : ""}
+                                ${email ? `<p><strong>Correo:</strong> ${email}</p>` : ""}
+                                ${rol ? `<p><strong>Rol:</strong> ${rol}</p>` : ""}
                                 <hr>
                             </div>
                         `;
@@ -358,7 +372,6 @@
                             const datosFecha = fechasObj[fecha];
                             if (!datosFecha) return;
 
-                            // Crear subacordeón para la fecha
                             const fechaDiv = document.createElement("div");
                             fechaDiv.className = "fecha";
                             fechaDiv.innerHTML = `
@@ -380,12 +393,12 @@
                    ESTRUCTURA (paciente):
                    Pacientes -> <uid> -> { NombrePaciente: { ...datos } }
                 ---------------------------------------------- */
-                // ej: datosFirebase = { NombreX: { nombre, curp, fechaNac, sexo, 2024-03-09: {...}, 2024-03-10: {...} } }
                 Object.keys(datosFirebase).forEach((nombreKey) => {
                     const datosDeEstePaciente = datosFirebase[nombreKey];
                     if (!datosDeEstePaciente) return;
 
-                    const { nombre, curp, fechaNacimiento, sexo, ...fechasObj } = datosDeEstePaciente;
+                    const { nombre, curp, fechaNacimiento, sexo, email, rol, ...fechasObj } = datosDeEstePaciente;
+                    const edadCalculada = calcularEdad(fechaNacimiento);
 
                     const pacienteDiv = document.createElement("div");
                     pacienteDiv.className = "paciente";
@@ -395,7 +408,10 @@
                             ${nombre ? `<p><strong>Nombre:</strong> ${nombre}</p>` : ""}
                             ${curp ? `<p><strong>CURP:</strong> ${curp}</p>` : ""}
                             ${fechaNacimiento ? `<p><strong>Fecha de Nacimiento:</strong> ${fechaNacimiento}</p>` : ""}
+                            <p><strong>Edad:</strong> ${edadCalculada}</p>
                             ${sexo ? `<p><strong>Sexo:</strong> ${sexo}</p>` : ""}
+                            ${email ? `<p><strong>Correo:</strong> ${email}</p>` : ""}
+                            ${rol ? `<p><strong>Rol:</strong> ${rol}</p>` : ""}
                             <hr>
                         </div>
                     `;
@@ -403,7 +419,6 @@
 
                     const panelPaciente = pacienteDiv.querySelector(".panel");
 
-                    // Recorrer las claves que representen fechas
                     Object.keys(fechasObj).forEach((fecha) => {
                         const datosFecha = fechasObj[fecha];
                         if (!datosFecha) return;
@@ -471,9 +486,7 @@
                 });
             });
         }
-    </script>
 
-    <script>
         function filtrar() {
             let inputNombre = document.getElementById("buscar-paciente").value.toLowerCase();
             let inputFecha = document.getElementById("buscar-fecha").value.toLowerCase();
@@ -493,7 +506,7 @@
                     if (coincideFecha) fechaVisible = true;
                 });
 
-                // 🔥 Lógica para mostrar u ocultar pacientes según filtros aplicados
+                // 🔥 Lógica para mostrar u ocultar pacientes según filtros
                 if (inputNombre.length > 0 && inputFecha.length > 0) {
                     paciente.style.display = coincideNombre && fechaVisible ? "block" : "none";
                 } else if (inputNombre.length > 0) {
