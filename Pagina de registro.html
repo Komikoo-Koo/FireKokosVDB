@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1.0">
-
   <title>Komikoos Vitals Data Base</title>
 
   <!-- Cargar Firebase (compat) -->
@@ -342,15 +341,14 @@
           const uid = userCredential.user.uid;
 
           // Guardar datos en "usuarios/uid"
-          await window.db.ref("Pacientes/" + uid + "/" + userData.curp).set({
-            email: userData.email,
-            rol: userData.rol,
-            nombre: userData.nombre,
-            curp: userData.curp,
-            fechaNacimiento: userData.fechaNacimiento,
-            sexo: userData.sexo
+          await window.db.ref("usuarios/" + uid).set({
+            email: email,
+            rol: roleSelect,
+            nombre: nombre,
+            curp: curp,
+            fechaNacimiento: fechaNacimiento,
+            sexo: sexo
           });
-
 
           mostrarModal("Registro exitoso. Creando perfil...");
 
@@ -386,6 +384,44 @@
         mostrarModal("Error: " + error.message);
       }
     }
+
+    // 🔥 Opción 3 para simular placeholder en el input[type='date']
+    (function datePlaceholder() {
+      const fechaInput = document.getElementById("fechaNacimiento");
+
+      // Mostrar el placeholder si el campo está vacío
+      function setPlaceholder() {
+        fechaInput.type = "text";
+        fechaInput.style.color = "#888";
+        fechaInput.value = "dd/mm/aaaa";
+      }
+
+      // Remover el placeholder para que el usuario pueda usar el calendario
+      function removePlaceholder() {
+        fechaInput.type = "date";
+        fechaInput.style.color = "#000";
+        fechaInput.value = "";
+      }
+
+      // Al obtener foco
+      fechaInput.addEventListener("focus", function () {
+        if (this.value === "dd/mm/aaaa") {
+          removePlaceholder();
+        }
+      });
+
+      // Al perder foco
+      fechaInput.addEventListener("blur", function () {
+        if (this.value === "") {
+          setPlaceholder();
+        }
+      });
+
+      // Establecer placeholder inicial
+      if (fechaInput.value === "") {
+        setPlaceholder();
+      }
+    })();
   </script>
 </body>
 </html>
