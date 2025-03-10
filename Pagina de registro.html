@@ -342,14 +342,15 @@
           const uid = userCredential.user.uid;
 
           // Guardar datos en "usuarios/uid"
-          await window.db.ref("usuarios/" + uid).set({
-            email: email,
-            rol: roleSelect,
-            nombre: nombre,
-            curp: curp,
-            fechaNacimiento: fechaNacimiento,
-            sexo: sexo
+          await window.db.ref("Pacientes/" + uid + "/" + userData.curp).set({
+            email: userData.email,
+            rol: userData.rol,
+            nombre: userData.nombre,
+            curp: userData.curp,
+            fechaNacimiento: userData.fechaNacimiento,
+            sexo: userData.sexo
           });
+
 
           mostrarModal("Registro exitoso. Creando perfil...");
 
