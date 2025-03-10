@@ -367,8 +367,8 @@
                         // Panel interno
                         const panelPaciente = pacienteDiv.querySelector(".panel");
 
-                        // Recorrer las supuestas fechas (YYYY-MM-DD)
-                        Object.keys(fechasObj).forEach((fecha) => {
+                        // 🔥 Cambiamos aquí para mostrar fechas de más reciente a más antigua
+                        Object.keys(fechasObj).sort().reverse().forEach((fecha) => {
                             const datosFecha = fechasObj[fecha];
                             if (!datosFecha) return;
 
@@ -419,7 +419,8 @@
 
                     const panelPaciente = pacienteDiv.querySelector(".panel");
 
-                    Object.keys(fechasObj).forEach((fecha) => {
+                    // 🔥 Cambiamos aquí para mostrar fechas de más reciente a más antigua
+                    Object.keys(fechasObj).sort().reverse().forEach((fecha) => {
                         const datosFecha = fechasObj[fecha];
                         if (!datosFecha) return;
 
