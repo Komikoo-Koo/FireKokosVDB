@@ -189,12 +189,6 @@
       <input type="email" id="email" placeholder="Email Address">
       <input type="password" id="password" placeholder="Password">
 
-      <!-- Select para el rol, SOLO se muestra cuando se está registrando -->
-      <select id="roleSelect" style="display: none;">
-        <option value="paciente">Paciente</option>
-        <option value="medico">Médico</option>
-      </select>
-
       <!-- NUEVOS CAMPOS (ocultos inicialmente) -->
       <input type="text" id="nombre" placeholder="Nombre Completo" style="display: none;">
       <input type="text" id="curp" placeholder="CURP" style="display: none;">
@@ -203,6 +197,12 @@
         <option value="">Sexo biológico</option>
         <option value="Masculino">Masculino</option>
         <option value="Femenino">Femenino</option>
+      </select>
+
+      <!-- Select para el rol, MOVIDO al final -->
+      <select id="roleSelect" style="display: none;">
+        <option value="paciente">Paciente</option>
+        <option value="medico">Médico</option>
       </select>
 
       <button id="authButton" onclick="authAction()">Ingresar a cuenta</button>
@@ -261,13 +261,13 @@
       const title = document.getElementById("formTitle");
       const authButton = document.getElementById("authButton");
       const toggleBtn = document.querySelector(".toggle-btn");
-      const roleSelect = document.getElementById("roleSelect");
 
       // NUEVOS CAMPOS
       const nombre = document.getElementById("nombre");
       const curp = document.getElementById("curp");
       const fechaNacimiento = document.getElementById("fechaNacimiento");
       const sexo = document.getElementById("sexo");
+      const roleSelect = document.getElementById("roleSelect");
 
       isSignIn = !isSignIn;
 
@@ -275,24 +275,24 @@
         title.textContent = "Ingresar";
         authButton.textContent = "Ingresar a cuenta";
         toggleBtn.textContent = "Crear cuenta";
-        roleSelect.style.display = "none";
 
         // Ocultamos los nuevos campos
         nombre.style.display = "none";
         curp.style.display = "none";
         fechaNacimiento.style.display = "none";
         sexo.style.display = "none";
+        roleSelect.style.display = "none";
       } else {
         title.textContent = "Registro";
         authButton.textContent = "Crear cuenta";
         toggleBtn.textContent = "¿Ya tienes cuenta?";
-        roleSelect.style.display = "block";
 
         // Mostramos los nuevos campos
         nombre.style.display = "block";
         curp.style.display = "block";
         fechaNacimiento.style.display = "block";
         sexo.style.display = "block";
+        roleSelect.style.display = "block";
       }
     }
 
