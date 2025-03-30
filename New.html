@@ -156,6 +156,46 @@
                 margin-top: 263px; /* Aún menos margen en pantallas pequeñas */
             }
         }
+        .seguidor-cardiaco-box {
+  margin-top: 1px;
+  height: 45px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 2px solid crimson;
+  border-radius: 10px;
+  background-color: #ffeaea;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(220, 20, 60, 0.3);
+}
+
+.dark-mode .seguidor-cardiaco-box {
+  background-color: #3b0f0f;
+  color: #fff;
+  border-color: #ff6b6b;
+}
+
+.bpm-box {
+  font-size: 32px;
+  font-weight: bold;
+  color: crimson;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.bpm-units {
+  font-size: 18px;
+  color: #666;
+}
+
+.seguidor-cardiaco-box h4 {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
     </style>
 </head>
 <body>
@@ -367,6 +407,24 @@
                         // Panel interno
                         const panelPaciente = pacienteDiv.querySelector(".panel");
 
+                        // Mostrar seguidor cardíaco si existe
+const seguidorCardiaco = datosDeEstePaciente["Seguidor Cardiaco"];
+if (seguidorCardiaco !== undefined) {
+  const bpmSpanId = `bpm-${idPaciente}-${curp || nombreKey}`;
+
+  const seguidorBox = document.createElement("div");
+  seguidorBox.className = "seguidor-cardiaco-box";
+  seguidorBox.innerHTML = `
+    <h4>❤️ Seguimiento en Tiempo Real</h4>
+    <div class="bpm-box">
+      <span id="${bpmSpanId}" class="bpm-value">${seguidorCardiaco ?? "--"}</span>
+      <span class="bpm-units">bpm</span>
+    </div>
+  `;
+  panelPaciente.appendChild(seguidorBox);
+}
+
+
                         // 🔥 Cambiamos aquí para mostrar fechas de más reciente a más antigua
                         Object.keys(fechasObj).sort().reverse().forEach((fecha) => {
                             const datosFecha = fechasObj[fecha];
@@ -420,7 +478,12 @@
                     const panelPaciente = pacienteDiv.querySelector(".panel");
 
                     // 🔥 Cambiamos aquí para mostrar fechas de más reciente a más antigua
-                    Object.keys(fechasObj).sort().reverse().forEach((fecha) => {
+                    Object.keys(fechasObj)
+  .filter(fecha => fecha !== "Seguidor Cardiaco")
+  .sort()
+  .reverse()
+  .forEach((fecha) => {
+
                         const datosFecha = fechasObj[fecha];
                         if (!datosFecha) return;
 
