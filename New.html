@@ -232,6 +232,21 @@
   background-color: #45a049;
 }
 
+.btn-fecha {
+  margin-right: 5px;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: #007BFF;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-fecha:hover {
+  background-color: #0056b3;
+}
+
         
     </style>
 </head>
@@ -498,16 +513,23 @@ hastaInput.value = `${yyyy}-${mm}-${dd}`;
 
                             const fechaDiv = document.createElement("div");
                             fechaDiv.className = "fecha";
-                            fechaDiv.innerHTML = `
-                                <button class="accordion fecha-btn">${fecha} 📅</button>
-                                <div class="panel fecha-panel">
-                                    ${datosFecha.altura ? `<p><strong>Altura:</strong> ${datosFecha.altura} cm</p>` : ""}
-                                    ${datosFecha.temperatura ? `<p><strong>Temperatura:</strong> ${datosFecha.temperatura} °C</p>` : ""}
-                                    ${datosFecha.presion ? `<p><strong>Presión Arterial:</strong> ${datosFecha.presion}</p>` : ""}
-                                    ${datosFecha.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datosFecha.ritmo_cardiaco} bpm</p>` : ""}
-                                    ${datosFecha.peso ? `<p><strong>Peso:</strong> ${datosFecha.peso} kg</p>` : ""}
-                                </div>
-                            `;
+                           fechaDiv.innerHTML = `
+  <button class="accordion fecha-btn">${fecha} 📅</button>
+  <div class="panel fecha-panel">
+      ${datosFecha.altura ? `<p><strong>Altura:</strong> ${datosFecha.altura} cm</p>` : ""}
+      ${datosFecha.temperatura ? `<p><strong>Temperatura:</strong> ${datosFecha.temperatura} °C</p>` : ""}
+      ${datosFecha.presion ? `<p><strong>Presión Arterial:</strong> ${datosFecha.presion}</p>` : ""}
+      ${datosFecha.ritmo_cardiaco ? `<p><strong>Ritmo Cardíaco:</strong> ${datosFecha.ritmo_cardiaco} bpm</p>` : ""}
+      ${datosFecha.peso ? `<p><strong>Peso:</strong> ${datosFecha.peso} kg</p>` : ""}
+      
+      <div style="margin-top: 10px;">
+          <button class="btn-fecha eliminar-fecha" data-fecha="${fecha}">🗑️ Borrar</button>
+          <button class="btn-fecha descargar-pdf" data-fecha="${fecha}">📄 PDF</button>
+          <button class="btn-fecha descargar-csv" data-fecha="${fecha}">📥 CSV</button>
+      </div>
+  </div>
+`;
+
                             panelPaciente.appendChild(fechaDiv);
                         });
                     });
