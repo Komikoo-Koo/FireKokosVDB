@@ -703,6 +703,7 @@ document.addEventListener("click", async (e) => {
       ? pacientePanel.querySelector("p").textContent.replace("CURP:", "").trim()
       : "";
     const idPaciente = pacienteDiv?.dataset.idPaciente;
+      pacienteDiv.dataset.idPaciente = idPaciente;
 
     if (!curpTag || !idPaciente) {
       alert("No se pudo obtener CURP o ID del paciente.");
