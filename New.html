@@ -424,6 +424,7 @@
                         // Crear div paciente y colocar datos personales arriba
                         const pacienteDiv = document.createElement("div");
                         pacienteDiv.className = "paciente";
+                        pacienteDiv.dataset.idPaciente = idPaciente;
 
                         pacienteDiv.innerHTML = `
                             <button class="accordion">${nombreKey} ⬇</button>
@@ -703,7 +704,7 @@ document.addEventListener("click", async (e) => {
       ? pacientePanel.querySelector("p").textContent.replace("CURP:", "").trim()
       : "";
     const idPaciente = pacienteDiv?.dataset.idPaciente;
-      pacienteDiv.dataset.idPaciente = idPaciente;
+    
 
     if (!curpTag || !idPaciente) {
       alert("No se pudo obtener CURP o ID del paciente.");
