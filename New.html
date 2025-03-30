@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+  window.jsPDF = window.jspdf.jsPDF;
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Pacientes (Tiempo Real)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 
 
@@ -813,7 +817,14 @@ document.addEventListener("click", async (e) => {
     const fecha = btn.dataset.fecha;
     const pacienteDiv = btn.closest(".paciente");
     const panel = pacienteDiv.querySelector(".panel");
-    const curp = panel.querySelector("p:has(strong:contains('CURP'))")?.textContent?.split(":")[1]?.trim();
+    let curp = "";
+const pList = panel.querySelectorAll("p");
+pList.forEach(p => {
+  if (p.textContent.includes("CURP:")) {
+    curp = p.textContent.replace("CURP:", "").trim();
+  }
+});
+
     const idPaciente = pacienteDiv.dataset.idPaciente;
 
     if (!idPaciente || !curp) return alert("No se encontró CURP o ID");
@@ -837,7 +848,7 @@ document.addEventListener("click", async (e) => {
     const nombreArchivo = `registro_${fecha}.${btn.classList.contains("descargar-pdf") ? "pdf" : "csv"}`;
 
     if (btn.classList.contains("descargar-pdf")) {
-      const doc = new jsPDF();
+      const doc = new window.jsPDF();
       doc.setFontSize(12);
       doc.text(contenido, 10, 10);
       doc.save(nombreArchivo);
