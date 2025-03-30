@@ -700,9 +700,14 @@ document.addEventListener("click", async (e) => {
       return;
     }
 
-    const curpTag = pacientePanel.querySelector("p strong")?.textContent.includes("CURP")
-      ? pacientePanel.querySelector("p").textContent.replace("CURP:", "").trim()
-      : "";
+    let curpTag = "";
+const pList = pacientePanel.querySelectorAll("p");
+pList.forEach(p => {
+  if (p.textContent.includes("CURP:")) {
+    curpTag = p.textContent.replace("CURP:", "").trim();
+  }
+});
+
     const idPaciente = pacienteDiv?.dataset.idPaciente;
     
 
