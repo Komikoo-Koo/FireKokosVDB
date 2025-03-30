@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Pacientes (Tiempo Real)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 
     <style>
@@ -800,6 +802,56 @@ pList.forEach(p => {
 
     } catch (err) {
       console.error("Error al generar gráfica:", err);
+    }
+  }
+});
+
+document.addEventListener("click", async (e) => {
+  const btn = e.target;
+
+  if (btn.classList.contains("eliminar-fecha")) {
+    const fecha = btn.dataset.fecha;
+    const pacienteDiv = btn.closest(".paciente");
+    const panel = pacienteDiv.querySelector(".panel");
+    const curp = panel.querySelector("p:has(strong:contains('CURP'))")?.textContent?.split(":")[1]?.trim();
+    const idPaciente = pacienteDiv.dataset.idPaciente;
+
+    if (!idPaciente || !curp) return alert("No se encontró CURP o ID");
+
+    const confirmacion = confirm(`¿Eliminar la fecha ${fecha}?`);
+    if (!confirmacion) return;
+
+    try {
+      await window.db.ref(`Pacientes/${idPaciente}/${curp}/${fecha}`).remove();
+      alert(`✅ Fecha ${fecha} eliminada.`);
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+    }
+
+  } else if (btn.classList.contains("descargar-pdf") || btn.classList.contains("descargar-csv")) {
+    const fecha = btn.dataset.fecha;
+    const panel = btn.closest(".panel");
+    const pacienteDiv = btn.closest(".paciente");
+    const datos = panel.querySelectorAll("p");
+    const contenido = Array.from(datos).map(p => p.textContent).join("\n");
+    const nombreArchivo = `registro_${fecha}.${btn.classList.contains("descargar-pdf") ? "pdf" : "csv"}`;
+
+    if (btn.classList.contains("descargar-pdf")) {
+      const doc = new jsPDF();
+      doc.setFontSize(12);
+      doc.text(contenido, 10, 10);
+      doc.save(nombreArchivo);
+    } else {
+      const csv = "Dato,Valor\n" + Array.from(datos).map(p => {
+        const partes = p.textContent.split(":");
+        return `"${partes[0]}","${partes[1] || ""}"`;
+      }).join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = nombreArchivo;
+      a.click();
     }
   }
 });
