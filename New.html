@@ -470,6 +470,18 @@ graficadorBox.innerHTML = `
 `;
 panelPaciente.appendChild(graficadorBox);
 
+    // Establecer fecha mínima por defecto
+const desdeInput = graficadorBox.querySelector(".desde-fecha");
+desdeInput.value = "0001-01-01"; // Formato ISO compatible con input type="date"
+
+    const hastaInput = graficadorBox.querySelector(".hasta-fecha");
+const hoy = new Date();
+const yyyy = hoy.getFullYear();
+const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+const dd = String(hoy.getDate()).padStart(2, '0');
+hastaInput.value = `${yyyy}-${mm}-${dd}`;
+
+
 }
 
 
