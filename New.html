@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Pacientes (Tiempo Real)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
     <style>
         :root {
@@ -196,6 +198,40 @@
   line-height: 1.2;
 }
 
+        .graficador-box {
+  margin-top: 10px;
+  padding: 10px;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  background-color: #f0fdf4;
+}
+
+.dark-mode .graficador-box {
+  background-color: #183d1b;
+  border-color: #81c784;
+  color: #fff;
+}
+
+.graficador-box label {
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.graficador-box button {
+  margin-top: 10px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.graficador-box button:hover {
+  background-color: #45a049;
+}
+
+        
     </style>
 </head>
 <body>
@@ -422,6 +458,17 @@ if (seguidorCardiaco !== undefined) {
     </div>
   `;
   panelPaciente.appendChild(seguidorBox);
+    const graficadorBox = document.createElement("div");
+graficadorBox.className = "graficador-box";
+graficadorBox.innerHTML = `
+  <h4>📊 Evolución de Signos Vitales</h4>
+  <label>Desde: <input type="date" class="desde-fecha"></label>
+  <label>Hasta: <input type="date" class="hasta-fecha"></label>
+  <button class="generar-grafica">Generar</button>
+  <canvas class="grafica-vitales" width="380" height="200"></canvas>
+`;
+panelPaciente.appendChild(graficadorBox);
+
 }
 
 
@@ -637,6 +684,85 @@ if (seguidorCardiaco !== undefined) {
 
         // 🔥 Iniciar carga de pacientes después de cargar Firebase
         cargarPacientes();
+
+document.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("generar-grafica")) {
+    const box = e.target.closest(".graficador-box");
+    const pacientePanel = e.target.closest(".panel");
+    const pacienteDiv = e.target.closest(".paciente");
+    const desde = box.querySelector(".desde-fecha").value;
+    const hasta = box.querySelector(".hasta-fecha").value;
+    const canvas = box.querySelector(".grafica-vitales");
+
+    if (!desde || !hasta) {
+      alert("Selecciona un rango de fechas");
+      return;
+    }
+
+    const curpTag = pacientePanel.querySelector("p strong")?.textContent.includes("CURP")
+      ? pacientePanel.querySelector("p").textContent.replace("CURP:", "").trim()
+      : "";
+    const idPaciente = pacienteDiv?.dataset.idPaciente;
+
+    if (!curpTag || !idPaciente) {
+      alert("No se pudo obtener CURP o ID del paciente.");
+      return;
+    }
+
+    const ruta = `Pacientes/${idPaciente}/${curpTag}`;
+
+    try {
+      const snap = await window.db.ref(ruta).once("value");
+      const datos = snap.val() || {};
+
+      const fechas = Object.keys(datos)
+        .filter(f => /^\d{4}-\d{2}-\d{2}$/.test(f) && f >= desde && f <= hasta)
+        .sort();
+
+      if (fechas.length === 0) {
+        alert("No hay registros en ese rango");
+        return;
+      }
+
+      const temperaturas = [], ritmos = [], pesos = [], presiones = [], alturas = [];
+
+      fechas.forEach(f => {
+        const d = datos[f];
+        temperaturas.push(parseFloat(d?.temperatura || 0));
+        ritmos.push(parseFloat(d?.ritmo_cardiaco || 0));
+        pesos.push(parseFloat(d?.peso || 0));
+        presiones.push(parseFloat((d?.presion || "0/0").split("/")[0]));
+        alturas.push(parseFloat(d?.altura || 0));
+      });
+
+      if (box._grafica) box._grafica.destroy();
+
+      const ctx = canvas.getContext("2d");
+      box._grafica = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: fechas,
+          datasets: [
+            { label: "Temperatura (°C)", data: temperaturas, borderWidth: 2, fill: false },
+            { label: "Presión Sistólica", data: presiones, borderWidth: 2, fill: false },
+            { label: "Ritmo Cardíaco (bpm)", data: ritmos, borderWidth: 2, fill: false },
+            { label: "Peso (kg)", data: pesos, borderWidth: 2, fill: false },
+            { label: "Altura (cm)", data: alturas, borderWidth: 2, fill: false },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: false } },
+        }
+      });
+
+    } catch (err) {
+      console.error("Error al generar gráfica:", err);
+    }
+  }
+});
+
+        
     </script>
 </body>
 </html>
