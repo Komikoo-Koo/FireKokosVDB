@@ -426,7 +426,12 @@ if (seguidorCardiaco !== undefined) {
 
 
                         // 🔥 Cambiamos aquí para mostrar fechas de más reciente a más antigua
-                        Object.keys(fechasObj).sort().reverse().forEach((fecha) => {
+                        Object.keys(fechasObj)
+  .filter(fecha => fecha !== "Seguidor Cardiaco")
+  .sort()
+  .reverse()
+  .forEach((fecha) => {
+
                             const datosFecha = fechasObj[fecha];
                             if (!datosFecha) return;
 
